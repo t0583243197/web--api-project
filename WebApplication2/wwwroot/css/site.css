@@ -1,0 +1,62 @@
+html { /* אלמנט שורש HTML */
+  font-size: 14px; /* גודל בסיסי של פונט */
+} /* סיום בלוק html */
+
+@media (min-width: 768px) { /* תקנון לרוחבים >= 768px */
+  html { /* אלמנט שורש בתוך מדיה */
+    font-size: 16px; /* גודל גופן מוגדל למסכים רחבים */
+  } /* סיום בלוק html בתוך מדיה */
+} /* סיום בלוק @media */
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus { /* סגנון למצב פוקוס של כפתורים וטפסים */
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb; /* הצללה לפוקוס עם צבע גבול */
+} /* סיום בלוק פוקוס */
+
+html { /* אלמנט שורש נוסף */
+  position: relative; /* מיקום יחסית לשימוש ב-footer מוחלט */
+  min-height: 100%; /* גובה מינימלי לשטח הדף */
+} /* סיום בלוק html שני */
+
+body { /* אלמנט גוף הדף */
+  margin-bottom: 60px; /* ריווח תחתון למניעת חפיפה עם הפוטר */
+} /* סיום בלוק body */
+
+/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification */ /* קישור לתיעוד */
+a.navbar-brand { /* סגנון למותג */
+  white-space: normal; /* שבירת שורות רגילה */
+  text-align: center; /* מרכז טקסט */
+  word-break: break-all; /* שבירת מילה במקרה שצריך */
+} /* סיום בלוק a.navbar-brand */
+a { /* סגנון לקישורים */
+  color: #0077cc; /* צבע כחול לקישורים */
+} /* סיום בלוק a */
+.btn-primary { /* סגנון כפתור ראשי */
+  color: #fff; /* טקסט לבן */
+  background-color: #1b6ec2; /* רקע כחול כהה */
+  border-color: #1861ac; /* צבע גבול כפתור */
+} /* סיום בלוק btn-primary */
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link { /* סגנון לטאב פעיל */
+  color: #fff; /* טקסט לבן בטאב פעיל */
+  background-color: #1b6ec2; /* רקע לטאב פעיל */
+  border-color: #1861ac; /* גבול לטאב פעיל */
+} /* סיום בלוק nav-pills */
+.border-top { /* קלאס גבול עליון */
+  border-top: 1px solid #e5e5e5; /* עיצוב גבול עליון דק */
+} /* סיום בלוק border-top */
+.border-bottom { /* קלאס גבול תחתון */
+  border-bottom: 1px solid #e5e5e5; /* עיצוב גבול תחתון דק */
+} /* סיום בלוק border-bottom */
+.box-shadow { /* הצללה קלה */
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); /* פרמטרי הצללה קלים */
+} /* סיום בלוק box-shadow */
+button.accept-policy { /* כפתור מדיניות */
+  font-size: 1rem; /* גודל גופן לכפתור */
+  line-height: inherit; /* ירושת גובה שורה מהרכיב */
+} /* סיום בלוק button.accept-policy */
+.footer { /* סגנון פוטר */
+  position: absolute; /* מיקום מוחלט לפוטר בתחתית הדף */
+  bottom: 0; /* יישור לתחתית */
+  width: 100%; /* רוחב מלא */
+  white-space: nowrap; /* מניעת שבירת שורה בפוטר */
+  line-height: 60px; /* גובה שורה לפוטר */
+} /* סיום בלוק footer */
