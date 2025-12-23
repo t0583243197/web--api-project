@@ -12,8 +12,8 @@ using WebApplication2.DAL;
 namespace WebApplication2.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    [Migration("20251222153420_RemovePhoneColumn")]
-    partial class RemovePhoneColumn
+    [Migration("20251223202809_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -87,6 +87,10 @@ namespace WebApplication2.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Donors");
@@ -125,32 +129,6 @@ namespace WebApplication2.Migrations
                     b.ToTable("Gifts");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.OrderItemModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GiftId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GiftId");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("OrderItems");
-                });
-
             modelBuilder.Entity("WebApplication2.Models.OrderModel", b =>
                 {
                     b.Property<int>("Id")
@@ -176,6 +154,37 @@ namespace WebApplication2.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("WebApplication2.Models.OrderTicketModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GiftId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserModelId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GiftId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserModelId");
+
+                    b.ToTable("OrderTicket");
                 });
 
             modelBuilder.Entity("WebApplication2.Models.WinnerModel", b =>
@@ -209,7 +218,7 @@ namespace WebApplication2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApplication2.Models.DonorModel", "Donor")
+                    b.HasOne("WebApplication2.Models.DonorModel", "Donnor")
                         .WithMany("Gifts")
                         .HasForeignKey("DonorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -217,10 +226,21 @@ namespace WebApplication2.Migrations
 
                     b.Navigation("Category");
 
-                    b.Navigation("Donor");
+                    b.Navigation("Donnor");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.OrderItemModel", b =>
+            modelBuilder.Entity("WebApplication2.Models.OrderModel", b =>
+                {
+                    b.HasOne("UserModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WebApplication2.Models.OrderTicketModel", b =>
                 {
                     b.HasOne("WebApplication2.Models.GiftModel", "Gift")
                         .WithMany()
@@ -234,20 +254,13 @@ namespace WebApplication2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("UserModel", null)
+                        .WithMany("Tickets")
+                        .HasForeignKey("UserModelId");
+
                     b.Navigation("Gift");
 
                     b.Navigation("Order");
-                });
-
-            modelBuilder.Entity("WebApplication2.Models.OrderModel", b =>
-                {
-                    b.HasOne("UserModel", "User")
-                        .WithMany("Orders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WebApplication2.Models.WinnerModel", b =>
@@ -271,7 +284,7 @@ namespace WebApplication2.Migrations
 
             modelBuilder.Entity("UserModel", b =>
                 {
-                    b.Navigation("Orders");
+                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("WebApplication2.Models.CategoryModel", b =>

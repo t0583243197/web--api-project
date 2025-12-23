@@ -28,7 +28,7 @@ namespace WebApplication2.Mappings // מרחב למיפויים
             // בתוך GiftMappingProfile.cs
             CreateMap<DonorModel, donorDTO>().ReverseMap();
             CreateMap<GiftModel, GiftDTO>().ReverseMap();
-    CreateMap<UserDto, UserModel>().ReverseMap();
+            CreateMap<UserDto, UserModel>().ReverseMap();
 
         } // סיום בנאי
     } // סיום מחלקה

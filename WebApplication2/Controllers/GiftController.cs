@@ -13,8 +13,14 @@ public class GiftsController : ControllerBase // בקר לטיפול במתנו�
         _giftBll = giftBll; // שמירת ה-BLL בשדה
     } // סיום בנאי
 
-    [HttpGet] // פתוח לכולם לצפייה בקטלוג
-    public IActionResult GetAll() => Ok(_giftBll.getAllGifts()); // החזרת כל המתנות
+    [HttpGet]
+    public ActionResult<List<GiftDTO>> Get([FromQuery] string? name, [FromQuery] string? donorName, [FromQuery] int? minPurchasers)
+    {
+        // אם לא נשלחו פרמטרים, זה יחזיר את כל המתנות.
+        // אם נשלחו, ה-BLL יבצע את הסינון שכתבנו ב-DAL.
+        var gifts = _giftBll.GetGiftsByFilter(name, donorName, minPurchasers);
+        return Ok(gifts);
+    }
 
     [Authorize(Roles = "Manager")] // רק למנהל מחובר
     [HttpPost] // פעולה להוספה

@@ -5,6 +5,7 @@ namespace WebApplication2.DAL // מרחב שמות ל-DAL
     public interface IGiftDal // ממשק לגישת נתונים של מתנות
     { // פתיחת ממשק
         List<GiftDTO> getAll(); // החזרת כל המתנות כ-List של DTO
+        List<GiftDTO> GetByFilter(string? name, string? donorName, int? minPurchasers);// החזרת מתנות לפי סינון
         void add(GiftDTO gift); // הוספת מתנה חדשה
         void update(GiftDTO gift); // עדכון מתנה קיימת
         void delete(int id); // מחיקת מתנה לפי Id
