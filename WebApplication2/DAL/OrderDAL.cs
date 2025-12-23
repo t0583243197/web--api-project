@@ -11,27 +11,19 @@ namespace WebApplication2.DAL
             _context = context;
         }
 
-        public int AddOrder(OrderTicketModel orderTicket)
-        {
-            // Create a new OrderModel and add the ticket to it
-            var order = new OrderModel
-            {
-                UserId = orderTicket.Order?.UserId ?? 0,
-                OrderDate = DateTime.Now,
-                TotalAmount = 0, // Set as needed
-                OrderItems = new List<OrderTicketModel> { orderTicket } // Fixed property name
-            };
 
+        public int AddOrder(OrderModel order)
+        {
             _context.Orders.Add(order);
-            _context.SaveChanges();
+            _context.SaveChanges(); // שומר את ההזמנה ואת כל ה-OrderItems שקשורים אליה
             return order.Id;
         }
 
-        public List<OrderTicketModel> GetUserOrders(int userId)
+        public List<OrderModel> GetUserOrders(int userId)
         {
             return _context.Orders
                 .Where(o => o.UserId == userId)
-                .SelectMany(o => o.OrderItems) // Fixed property name
+
                 .ToList();
         }
     }

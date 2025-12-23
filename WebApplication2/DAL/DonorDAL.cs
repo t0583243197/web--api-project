@@ -46,7 +46,9 @@ namespace WebApplication2.DAL
 
         public void Add(donorDTO newDonor)
         {
+
             var donor = _mapper.Map<DonorModel>(newDonor);
+
             _context.Donors.Add(donor);
             _context.SaveChanges();
         }

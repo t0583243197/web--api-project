@@ -11,8 +11,11 @@ namespace WebApplication2.DAL // מרחב שמות ל-DAL
         public DbSet<DonorModel> Donors { get; set; } // DbSet לתורמים
         public DbSet<GiftModel> Gifts { get; set; } // DbSet למתנות
         public DbSet<CategoryModel> Categories { get; set; } // DbSet לקטגוריות
+
         public DbSet<OrderModel> Orders { get; set; } // DbSet להזמנות
+
         public DbSet<OrderTicketModel> OrderTicket { get; set; } // DbSet לפרטי הזמנה
+
         public DbSet<WinnerModel> Winners { get; set; } // DbSet לזוכים
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) // קונפיגורציה של מודלים
@@ -22,7 +25,7 @@ namespace WebApplication2.DAL // מרחב שמות ל-DAL
                 .HasColumnType("decimal(18,2)"); // הגדרת סוג עמודה
 
             modelBuilder.Entity<GiftModel>() // קשר Gift -> Donor
-                .HasOne(g => g.Donor) // לכל מתנה יש תורם
+                .HasOne(g => g.Donnor) // לכל מתנה יש תורם
                 .WithMany(d => d.Gifts) // לתורם יכולים להיות רבות מתנות
                 .HasForeignKey(g => g.DonorId); // מפתח זר
 
