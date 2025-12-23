@@ -16,8 +16,6 @@ namespace WebApplication2.Controllers
 
         public OrderController(IOrderBLL orderBll)
 
-        
-
         {
             _orderBll = orderBll;
         }

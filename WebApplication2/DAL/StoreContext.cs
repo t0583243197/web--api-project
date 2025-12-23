@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore; // מייבא EF Core
+﻿using System.Net.Sockets;
+using Microsoft.EntityFrameworkCore; // מייבא EF Core
 using WebApplication2.Models; // מייבא מודלים
 
 namespace WebApplication2.DAL // מרחב שמות ל-DAL
@@ -17,7 +18,7 @@ namespace WebApplication2.DAL // מרחב שמות ל-DAL
         public DbSet<OrderTicketModel> OrderTicket { get; set; } // DbSet לפרטי הזמנה
 
         public DbSet<WinnerModel> Winners { get; set; } // DbSet לזוכים
-
+        public DbSet<TicketModel> Tickets { get; set; } // DbSet לכרטיסים
         protected override void OnModelCreating(ModelBuilder modelBuilder) // קונפיגורציה של מודלים
         { // התחלת שיטה
             modelBuilder.Entity<GiftModel>() // קונפיגורציית GiftModel
