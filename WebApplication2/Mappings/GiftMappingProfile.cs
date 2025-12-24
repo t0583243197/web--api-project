@@ -9,7 +9,7 @@ namespace WebApplication2.Mappings // מרחב למיפויים
         public GiftMappingProfile() // בנאי המגדיר מפות
         { // התחלת בנאי
             // --- מיפוי מתנות ---
-            CreateMap<GiftModel, GiftDTO>(); // מיפוי ממודל ל-DTO
+          
 
             CreateMap<GiftDTO, GiftModel>() // מיפוי מה-DTO חזרה למודל
                 .ForMember(dest => dest.Id, opt => opt.Ignore()); // התעלם מה-Id בעדכון
@@ -23,10 +23,8 @@ namespace WebApplication2.Mappings // מרחב למיפויים
             // --- מיפוי משתמשים ---
 
 
-            CreateMap<UserDto, UserModel>().ReverseMap(); // שורה כפולה (ניתן להסיר כפילות)
-
             // בתוך GiftMappingProfile.cs
-            CreateMap<DonorModel, donorDTO>().ReverseMap();
+          
             CreateMap<GiftModel, GiftDTO>().ReverseMap();
             CreateMap<UserDto, UserModel>().ReverseMap();
 
