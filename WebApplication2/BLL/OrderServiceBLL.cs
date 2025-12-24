@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using WebApplication2.DAL;
 using WebApplication2.Models;
 using WebApplication2.Models.DTO;
@@ -12,11 +13,13 @@ namespace WebApplication2.BLL
     {
         private readonly IOrderDal _orderDal;
         private readonly IGiftDal _giftDal;
+        private readonly IMapper _mapper; // <-- Add this line
 
-        public OrderServiceBLL(IOrderDal orderDal, IGiftDal giftDal)
+        public OrderServiceBLL(IOrderDal orderDal, IGiftDal giftDal, IMapper mapper) // <-- Add IMapper to constructor
         {
             _orderDal = orderDal;
             _giftDal = giftDal;
+            _mapper = mapper; // <-- Assign mapper
         }
 
         public Task<List<PurchaserDetailsDto>> GetPurchasersForGiftAsync(int giftId)
@@ -35,7 +38,7 @@ namespace WebApplication2.BLL
             // שליפת כל המתנות בצורה אסינכרונית כדי לקבל מחירים עדכניים
             var gifts = await _giftDal.GetAllAsync();
 
-            foreach (var itemDto in Dto.Items)
+            foreach (var itemDto in Dto.OrderItems)
             {
                 var gift = gifts.FirstOrDefault(g => g.Id == itemDto.GiftId);
                 if (gift != null)
@@ -63,10 +66,15 @@ namespace WebApplication2.BLL
             return orderId;
         }
 
-        public Task<List<OrderDTO>> GetUserHistoryAsync(int userId)
+        public async Task<List<OrderDTO>> GetUserHistoryAsync(int userId)
         {
-            // מימוש דמה לעת עתה
-            return Task.FromResult(new List<OrderDTO>());
+            // שליפת הנתונים מה-DAL
+            var orders = _orderDal.GetUserOrders(userId);
+
+            if (orders == null || !orders.Any()) return new List<OrderDTO>();
+
+            // מיפוי הנתונים ל-DTO כדי שה-Controller יוכל להחזיר אותם
+            return _mapper.Map<List<OrderDTO>>(orders);
         }
     }
 }

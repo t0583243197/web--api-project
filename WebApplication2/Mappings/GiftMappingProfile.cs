@@ -34,6 +34,9 @@ namespace WebApplication2.Mappings // מרחב למיפויים
 
             // --- מיפוי משתמשים ---
             CreateMap<UserDto, UserModel>().ReverseMap();
+            
+            CreateMap<OrderTicketModel, OrderItemDTO>();
+            CreateMap<OrderModel, OrderDTO>();
 
         } // סיום בנאי
     } // סיום מחלקה

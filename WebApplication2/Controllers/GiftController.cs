@@ -47,7 +47,6 @@ public class GiftsController : ControllerBase // בקר לטיפול במתנו�
     } // סיום שיטה Delete
       // 1. נתיב למיון לפי המחיר הגבוה ביותר
     [HttpGet("sorted-by-price")]
-    [Authorize(Roles = "manager")] // רק מנהל יכול לראות מיונים ניהוליים
     public async Task<IActionResult> GetGiftsByPrice()
     {
         var gifts = await _giftBll.GetGiftsSortedByPriceAsync();
@@ -56,7 +55,7 @@ public class GiftsController : ControllerBase // בקר לטיפול במתנו�
 
     // 2. נתיב למיון לפי המתנה הנרכשת ביותר
     [HttpGet("most-purchased")]
-    [Authorize(Roles = "manager")]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> GetMostPurchased()
     {
         var gifts = await _giftBll.GetMostPurchasedGiftsAsync();

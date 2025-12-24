@@ -22,7 +22,7 @@ namespace WebApplication2.Controllers
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout([FromBody] OrderDTO orderDto)
         {
-            if (orderDto == null || orderDto.Items == null || orderDto.Items.Count == 0)
+            if (orderDto == null || orderDto.OrderItems == null || orderDto.OrderItems.Count == 0)
             {
                 return BadRequest("סל הקניות ריק");
             }

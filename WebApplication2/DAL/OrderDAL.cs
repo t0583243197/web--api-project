@@ -1,4 +1,5 @@
-﻿using WebApplication2.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using WebApplication2.Models;
 using WebApplication2.Models.DTO;
 
 namespace WebApplication2.DAL
@@ -20,24 +21,23 @@ namespace WebApplication2.DAL
             return order.Id;
         }
 
-        public List<PurchaserDetailsDto> GetPurchasersByGiftId(int giftId)//שולף את כל הרוכשים של מתנה מסוימת
+        public List<PurchaserDetailsDto> GetPurchasersByGiftId(int giftId)
         {
             return _context.OrderTicket
-                .Where(t => t.GiftId == giftId)
+                .Where(t => t.GiftId == giftId && t.Order.IsDraft == true) // סינון: רק הזמנות סגורות
                 .Select(t => new PurchaserDetailsDto
                 {
-                    CustomerName = t.Order.User.Name, // Use Name property instead of FirstName + LastName
+                    CustomerName = t.Order.User.Name,
                     Email = t.Order.User.Email,
                     TicketsCount = t.Quantity
                 })
                 .ToList();
         }
-
-        public List<OrderModel> GetUserOrders(int userId)//שולף את כל הרכישות של משתמש מסוים
+        public List<OrderModel> GetUserOrders(int userId)
         {
             return _context.Orders
-                .Where(o => o.UserId == userId)
-
+                .Include(o => o.OrderItems) // השורה הזו היא הקסם שחסר! היא טוענת את הכרטיסים
+                .Where(o => o.UserId == userId && o.IsDraft == true)
                 .ToList();
         }
     }
