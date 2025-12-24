@@ -1,51 +1,51 @@
-﻿<!DOCTYPE html> // הצהרת DOCTYPE
-<html lang="en"> // תחילת HTML עם שפה
-<head> // תחילת כותרת
-    <meta charset="utf-8" /> // הגדרת קידוד
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> // רספונסיביות
-    <title>@ViewData["Title"] - WebApplication2</title> // כותרת דינמית
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> // Bootstrap
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> // CSS אתר
-    <link rel="stylesheet" href="~/WebApplication2.styles.css" asp-append-version="true" /> // CSS נוסף
-</head> // סוף כותרת
-<body> // תחילת גוף
-    <header> // כותרת עליונה
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"> // ניווט
-            <div class="container"> // מכולת ניווט
-                <a class="navbar-brand" asp-area="" asp-page="/Index">WebApplication2</a> // קישור לבית
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebApplication2</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebApplication2.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-page="/Index">WebApplication2</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation"> // כפתור למצב נייד
-                    <span class="navbar-toggler-icon"></span> // אייקון כפתור
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between"> // תפריט קוהרנטי
-                    <ul class="navbar-nav flex-grow-1"> // רשימת קישורים
-                        <li class="nav-item"> // פריט בתפריט
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a> // קישור בית
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                         </li>
-                        <li class="nav-item"> // פריט בתפריט
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a> // קישור פרטיות
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container"> // מכולת תוכן כללית
-        <main role="main" class="pb-3"> // אזור תוכן ראשי
-            @RenderBody() // הצגת תוכן העמוד
+    <div class="container"> <!-- מכולת תוכן כללית -->
+        <main role="main" class="pb-3"> <!-- אזור תוכן ראשי -->
+            @RenderBody() <!-- הצגת תוכן העמוד -->
         </main>
     </div>
 
-    <footer class="border-top footer text-muted"> // Footer
-        <div class="container"> // מכולת Footer
-            &copy; 2025 - WebApplication2 - <a asp-area="" asp-page="/Privacy">Privacy</a> // טקסט זכויות
+    <footer class="border-top footer text-muted"> <!-- Footer -->
+        <div class="container"> <!-- מכולת Footer -->
+            &copy; 2025 - WebApplication2 - <a asp-area="" asp-page="/Privacy">Privacy</a> <!-- טקסט זכויות -->
         </div>
     </footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script> // jQuery
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> // Bootstrap JS
-    <script src="~/js/site.js" asp-append-version="true"></script> // JS אתר
+    <script src="~/lib/jquery/dist/jquery.min.js"></script> <!-- jQuery -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap JS -->
+    <script src="~/js/site.js" asp-append-version="true"></script> <!-- JS אתר -->
 
-    @await RenderSectionAsync("Scripts", required: false) // הסקריפטים המותאמים של העמוד
-</body> // סיום גוף
-</html> // סיום HTML
+    @await RenderSectionAsync("Scripts", required: false) <!-- הסקריפטים המותאמים של העמוד -->
+</body> <!-- סיום גוף -->
+</html> <!-- סיום HTML -->

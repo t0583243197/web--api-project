@@ -1,4 +1,6 @@
-﻿using WebApplication2.DAL;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebApplication2.DAL;
 using WebApplication2.Models.DTO;
 
 namespace WebApplication2.BLL
@@ -9,12 +11,15 @@ namespace WebApplication2.BLL
 
         public DonorServiceBLL(IDonorDal donorDal) => _donorDal = donorDal;
 
-        public List<donorDTO> GetAllDonors() => _donorDal.GetAll();
-        // קריאה ל-DAL לביצוע הסינון
-        public List<donorDTO> GetDonorsByFilter(string? name, string? email, string? giftName)
-            => _donorDal.GetByFilter(name, email, giftName);
-        public void AddDonor(donorDTO donor) => _donorDal.Add(donor);
-        public void UpdateDonor(donorDTO donor) => _donorDal.Update(donor);
-        public void DeleteDonor(int id) => _donorDal.Delete(id);
+        public Task<List<DonorDTO>> GetAllDonorsAsync() => _donorDal.GetAllAsync();
+
+        public Task<List<DonorDTO>> GetDonorsByFilterAsync(string? name, string? email, string? giftName)
+            => _donorDal.GetByFilterAsync(name, email, giftName);
+
+        public Task AddDonorAsync(DonorDTO donor) => _donorDal.AddAsync(donor);
+
+        public Task UpdateDonorAsync(DonorDTO donor) => _donorDal.UpdateAsync(donor);
+
+        public Task DeleteDonorAsync(int id) => _donorDal.DeleteAsync(id);
     }
 }

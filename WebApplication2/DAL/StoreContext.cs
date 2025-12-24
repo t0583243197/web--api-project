@@ -25,7 +25,7 @@ namespace WebApplication2.DAL // מרחב שמות ל-DAL
                 .HasColumnType("decimal(18,2)"); // הגדרת סוג עמודה
 
             modelBuilder.Entity<GiftModel>() // קשר Gift -> Donor
-                .HasOne(g => g.Donnor) // לכל מתנה יש תורם
+                .HasOne(g => g.Donor) // לכל מתנה יש תורם
                 .WithMany(d => d.Gifts) // לתורם יכולים להיות רבות מתנות
                 .HasForeignKey(g => g.DonorId); // מפתח זר
 

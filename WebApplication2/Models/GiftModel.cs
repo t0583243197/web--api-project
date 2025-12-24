@@ -12,7 +12,7 @@
         public CategoryModel Category { get; set; } = null!; // הניווט לקטגוריה
 
         public int DonorId { get; set; } // מזהה תורם
-        public DonorModel Donnor { get; set; } = null!; // הניווט לתורם
+        public DonorModel Donor { get; set; } = null!; // הניווט לתורם
 
        
     } 

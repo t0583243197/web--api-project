@@ -1,12 +1,14 @@
-﻿using WebApplication2.Models.DTO; // מייבא DTO של מתנה
+﻿using WebApplication2.Models.DTO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-public interface IGiftBLL // ממשק ללוגיקת מתנות
-{ // פתיחת ממשק
-    List<GiftDTO> getAllGifts(); // החזרת כל המתנות כ-List של DTO
-    List<GiftDTO> GetGiftsByFilter(string? name, string? donorName, int? minPurchasers);// החזרת מתנות לפי סינון
-    List<GiftDTO> GetGiftsSortedByPrice();// החזרת מתנות ממוינות לפי מחיר כרטיס
-    List<GiftDTO> GetMostPurchasedGifts();// החזרת מתנות ממוינות לפי מחיר כרטיס
-    void addGift(GiftDTO gift); // הוספת מתנה דרך ה-BLL
-    void updateGift(GiftDTO gift); // עדכון מתנה דרך ה-BLL
-    void deleteGift(int id); // מחיקת מתנה דרך ה-BLL
-} // סגירת ממשק
+public interface IGiftBLL
+{
+    Task<List<GiftDTO>> GetAllGiftsAsync();
+    Task<List<GiftDTO>> GetGiftsByFilterAsync(string? name, string? donorName, int? minPurchasers);
+    Task<List<GiftDTO>> GetGiftsSortedByPriceAsync();
+    Task<List<GiftDTO>> GetMostPurchasedGiftsAsync();
+    Task AddGiftAsync(GiftDTO gift);
+    Task UpdateGiftAsync(GiftDTO gift);
+    Task DeleteGiftAsync(int id);
+}

@@ -1,91 +1,86 @@
-﻿using AutoMapper; // מייבא AutoMapper
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using WebApplication2.DAL; // מייבא מרחב ה-DAL
-using WebApplication2.Models; // מייבא מודלים
-using WebApplication2.Models.DTO; // מייבא DTOs
-using AutoMapper.QueryableExtensions; // Add this at the top
+using WebApplication2.Models;
+using WebApplication2.Models.DTO;
+using AutoMapper.QueryableExtensions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-public class GiftDAL : IGiftDal // מימוש DAL עבור מתנות
-{ // התחלת מחלקה
-    private readonly StoreContext _context; // שדה לדטה-קונטקסט
-    private readonly IMapper _mapper; // שדה ל-Mapper
-
-    public GiftDAL(StoreContext context, IMapper mapper) // בנאי המכניס תלותיות
-    { // התחלת בנאי
-        _context = context; // שמירת הקונטקסט
-        _mapper = mapper; // שמירת ה-Mapper
-    } // סיום בנאי
-
-    public List<GiftDTO> GetByFilter(string? name, string? donorName, int? minPurchasers)
+namespace WebApplication2.DAL
+{
+    public class GiftDAL : IGiftDal
     {
-        // 1. התחלת שאילתה - נשאר ב-IQueryable (עדיין לא רץ ב-SQL)
-        var query = _context.Gifts
-            .Include(g => g.Donnor)
-            .AsQueryable();
+        private readonly StoreContext _context;
+        private readonly IMapper _mapper;
 
-        // 2. הוספת תנאי חיפוש לפי שם מתנה
-        if (!string.IsNullOrEmpty(name))
+        public GiftDAL(StoreContext context, IMapper mapper)
         {
-            query = query.Where(g => g.Name.Contains(name));
+            _context = context;
+            _mapper = mapper;
         }
 
-        // 3. הוספת תנאי חיפוש לפי שם תורם
-        if (!string.IsNullOrEmpty(donorName))
+        public async Task<List<GiftDTO>> GetByFilterAsync(string? name, string? donorName, int? minPurchasers)
         {
-            query = query.Where(g => g.Donnor.Name.Contains(donorName));
+            var query = _context.Gifts
+                .Include(g => g.Donor)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+                query = query.Where(g => g.Name.Contains(name));
+
+            if (!string.IsNullOrEmpty(donorName))
+                query = query.Where(g => g.Donor.Name.Contains(donorName));
+
+            var gifts = await query.ToListAsync();
+            return _mapper.Map<List<GiftDTO>>(gifts);
         }
 
-        // 4. חשוב: ביצוע ה-ToList רק כאן! 
-        // השאילתה שתשלח ל-SQL תהיה קטנה ומדויקת יותר.
-        var gifts = query.ToList();
+        public Task<List<GiftDTO>> GetGiftsSortedByPriceAsync() =>
+            _context.Gifts
+                .OrderByDescending(g => g.TicketPrice)
+                .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
 
-        // 5. מיפוי ל-DTO
-        return _mapper.Map<List<GiftDTO>>(gifts);
+        public Task<List<GiftDTO>> GetMostPurchasedGiftsAsync() =>
+            _context.Gifts
+                .OrderByDescending(g => _context.OrderTicket.Where(t => t.GiftId == g.Id).Sum(t => t.Quantity))
+                .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+        public async Task AddAsync(GiftDTO giftDto)
+        {
+            var gift = _mapper.Map<GiftModel>(giftDto);
+            _context.Gifts.Add(gift);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(GiftDTO giftDto)
+        {
+            var existingGift = await _context.Gifts.FindAsync(giftDto.Id);
+            if (existingGift != null)
+            {
+                _mapper.Map(giftDto, existingGift);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var gift = await _context.Gifts.FindAsync(id);
+            if (gift != null)
+            {
+                _context.Gifts.Remove(gift);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<GiftDTO>> GetAllAsync()
+        {
+            var gifts = await _context.Gifts
+                .Include(g => g.Donor)
+                .ToListAsync();
+            return _mapper.Map<List<GiftDTO>>(gifts);
+        }
     }
-    public List<GiftDTO> GetGiftsSortedByPrice() =>
-    _context.Gifts
-    .OrderByDescending(g => g.TicketPrice)
-    .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
-    .ToList();
-
-// 4. פונקציה חדשה: המתנה הנרכשת ביותר
-public List<GiftDTO> GetMostPurchasedGifts() =>
-    _context.Gifts
-    .OrderByDescending(g => _context.OrderTicket.Where(t => t.GiftId == g.Id).Sum(t => t.Quantity))
-    .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
-    .ToList();
-    public void add(GiftDTO giftDto) // הוספת מתנה חדשה
-    { // התחלת שיטה
-        var gift = _mapper.Map<GiftModel>(giftDto); // המרת DTO למודל
-        _context.Gifts.Add(gift); // הוספת המודל ל-DbSet
-        _context.SaveChanges(); // שמירה ל-DB
-    } // סיום שיטה
-
-    public void update(GiftDTO giftDto) // עדכון מתנה קיימת
-    { // התחלת שיטה
-        var existingGift = _context.Gifts.Find(giftDto.Id); // מציאת מתנה לפי Id
-        if (existingGift != null) // אם נמצא
-        { // התחלת תנאי
-            _mapper.Map(giftDto, existingGift); // עדכון השדות בתורם הקיים
-            _context.SaveChanges(); // שמירה ל-DB
-        } // סיום תנאי
-    } // סיום שיטה
-
-    public void delete(int id) // מחיקת מתנה
-    { // התחלת שיטה
-        var gift = _context.Gifts.Find(id); // מציאת מתנה לפי Id
-        if (gift != null) // אם נמצא
-        { // התחלת תנאי
-            _context.Gifts.Remove(gift); // הסרת המתנה
-            _context.SaveChanges(); // שמירה ל-DB
-        } // סיום תנאי
-    } // סיום שיטה
-
-    public List<GiftDTO> getAll()
-    {
-        var gifts = _context.Gifts
-            .Include(g => g.Donnor)
-            .ToList();
-        return _mapper.Map<List<GiftDTO>>(gifts);
-    }
-} // סיום מחלקה
+}

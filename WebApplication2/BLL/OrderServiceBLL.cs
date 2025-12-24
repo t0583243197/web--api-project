@@ -1,4 +1,8 @@
-﻿using WebApplication2.DAL;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WebApplication2.DAL;
 using WebApplication2.Models;
 using WebApplication2.Models.DTO;
 
@@ -14,53 +18,55 @@ namespace WebApplication2.BLL
             _orderDal = orderDal;
             _giftDal = giftDal;
         }
-        public List<PurchaserDetailsDto> GetPurchasersForGift(int giftId)
+
+        public Task<List<PurchaserDetailsDto>> GetPurchasersForGiftAsync(int giftId)
         {
-            return _orderDal.GetPurchasersByGiftId(giftId);
+            // אם IOrderDal אינו אסינכרוני, עטיפה ב-Task.FromResult לשמירה על API אסינכרוני
+            var result = _orderDal.GetPurchasersByGiftId(giftId);
+            return Task.FromResult(result);
         }
-        public int PlaceOrder(OrderDTO Dto)
+
+        public async Task<int> PlaceOrderAsync(OrderDTO Dto)
         {
-            double totalSum = 0;
+            decimal totalSum = 0m;
 
             var orderTickets = new List<OrderTicketModel>();
 
-            // מעבר על כל המתנות שהמשתמש בחר
+            // שליפת כל המתנות בצורה אסינכרונית כדי לקבל מחירים עדכניים
+            var gifts = await _giftDal.GetAllAsync();
+
             foreach (var itemDto in Dto.Items)
             {
-                // שליפת המתנה מה-DB כדי לוודא מחיר עדכני
-                var gift = _giftDal.getAll().FirstOrDefault(g => g.Id == itemDto.GiftId);
+                var gift = gifts.FirstOrDefault(g => g.Id == itemDto.GiftId);
                 if (gift != null)
                 {
                     totalSum += gift.TicketPrice;
 
                     orderTickets.Add(new OrderTicketModel
-
-
                     {
                         GiftId = gift.Id,
-                        Quantity = 1 // בהגרלה סינית כל שורה היא כרטיס
+                        Quantity = 1
                     });
                 }
             }
-
-            // יצירת מודל ההזמנה הסופי
 
             var newOrder = new OrderModel
             {
                 UserId = Dto.UserId,
                 OrderDate = DateTime.Now,
-                TotalAmount = totalSum,
+                TotalAmount = (double)totalSum, // Explicit cast from decimal to double
                 OrderItems = orderTickets
             };
 
-
-            return _orderDal.AddOrder(newOrder);
+            // אם IOrderDal.AddOrder הוא סינכרוני – נשמור קריאה סינכרונית (אפשר לעדכן ל‑AddOrderAsync מאוחר יותר)
+            var orderId = _orderDal.AddOrder(newOrder);
+            return orderId;
         }
 
-        public List<OrderDTO> GetUserHistory(int userId)
+        public Task<List<OrderDTO>> GetUserHistoryAsync(int userId)
         {
-            // כאן תבוא לوجיקה של שליפת היסטוריה ומיפוי ל-DTO
-            return new List<OrderDTO>();
+            // מימוש דמה לעת עתה
+            return Task.FromResult(new List<OrderDTO>());
         }
     }
 }

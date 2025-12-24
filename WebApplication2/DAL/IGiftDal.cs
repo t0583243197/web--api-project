@@ -1,15 +1,17 @@
-﻿using WebApplication2.Models.DTO; // מייבא DTO של מתנה
+﻿using WebApplication2.Models.DTO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace WebApplication2.DAL // מרחב שמות ל-DAL
-{ // פתיחת namespace
-    public interface IGiftDal // ממשק לגישת נתונים של מתנות
-    { // פתיחת ממשק
-        List<GiftDTO> getAll(); // החזרת כל המתנות כ-List של DTO
-        List<GiftDTO> GetByFilter(string? name, string? donorName, int? minPurchasers);// החזרת מתנות לפי סינון
-        List<GiftDTO> GetGiftsSortedByPrice();// החזרת מתנות ממוינות לפי מחיר כרטיס
-        List<GiftDTO> GetMostPurchasedGifts();// החזרת המתנות הנרכשות ביותר
-        void add(GiftDTO gift); // הוספת מתנה חדשה
-        void update(GiftDTO gift); // עדכון מתנה קיימת
-        void delete(int id); // מחיקת מתנה לפי Id
-    } // סגירת ממשק
-} // סגירת namespace
+namespace WebApplication2.DAL
+{
+    public interface IGiftDal
+    {
+        Task<List<GiftDTO>> GetAllAsync();
+        Task<List<GiftDTO>> GetByFilterAsync(string? name, string? donorName, int? minPurchasers);
+        Task<List<GiftDTO>> GetGiftsSortedByPriceAsync();
+        Task<List<GiftDTO>> GetMostPurchasedGiftsAsync();
+        Task AddAsync(GiftDTO gift);
+        Task UpdateAsync(GiftDTO gift);
+        Task DeleteAsync(int id);
+    }
+}

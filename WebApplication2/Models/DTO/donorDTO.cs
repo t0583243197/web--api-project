@@ -1,11 +1,12 @@
 ﻿namespace WebApplication2.Models.DTO
 {
-    public class donorDTO
+    public class DonorDTO
     {
-        public int Id { get; set; } // מזהה התורם לצורך עדכון/מחיקה [cite: 18]
-        public string Name { get; set; } // שם התורם לתצוגה ברשימה [cite: 17]
+        public int Id { get; set; } // מזהה התורם לצורך עדכון/מחיקה
+        public string Name { get; set; } // שם התורם לתצוגה ברשימה
 
         public string Email { get; set; } // מייל התורם
+        public string? Address { get; set; } // כתובת התורם
 
         public List<GiftDTO>? Gifts { get; set; }
     }
