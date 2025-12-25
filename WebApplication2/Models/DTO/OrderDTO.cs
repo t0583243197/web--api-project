@@ -10,7 +10,7 @@ namespace WebApplication2.Models.DTO
         //
         // רשימת המתנות שהמשתמש בחר לקנות להן כרטיסים
         public double TotalAmount { get; set; }
-        public List<OrderItemDTO> Items { get; set; } = new List<OrderItemDTO>();
+        public List<OrderItemDTO> OrderItems { get; set; } = new List<OrderItemDTO>();
     }
 
     public class OrderItemDTO // כרטיס מתנה  

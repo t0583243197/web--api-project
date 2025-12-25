@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore; // נדרש עבור Include
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using WebApplication2.Models;
 using WebApplication2.Models.DTO;
 
@@ -16,60 +19,59 @@ namespace WebApplication2.DAL
             _mapper = mapper;
         }
 
-        public List<donorDTO> GetAll() => _mapper.Map<List<donorDTO>>(_context.Donors.ToList());
-
-        // מימוש הסינון
-        public List<donorDTO> GetByFilter(string? name, string? email, string? giftName)
+        public async Task<List<DonorDTO>> GetAllAsync()
         {
-            // מתחילים משאילתה הכוללת את המתנות של התורם
-            var query = _context.Donors.Include(d => d.Gifts).AsQueryable();
+            var donors = await _context.Donors
+                .Include(d => d.Gifts)
+                .ThenInclude(g => g.Category) // Include the Category for each Gift
+                .ToListAsync();
+            return _mapper.Map<List<DonorDTO>>(donors);
+        }
+
+        public async Task<List<DonorDTO>> GetByFilterAsync(string? name, string? email, string? giftName)
+        {
+            var query = _context.Donors
+                .Include(d => d.Gifts)
+                .ThenInclude(g => g.Category) // Include the Category for each Gift
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(name))
-            {
                 query = query.Where(d => d.Name.Contains(name));
-            }
 
             if (!string.IsNullOrEmpty(email))
-            {
                 query = query.Where(d => d.Email.Contains(email));
-            }
 
             if (!string.IsNullOrEmpty(giftName))
-            {
-                // סינון תורמים שתרמו לפחות מתנה אחת עם השם המבוקש
                 query = query.Where(d => d.Gifts.Any(g => g.Name.Contains(giftName)));
-            }
 
-            var results = query.ToList();
-            return _mapper.Map<List<donorDTO>>(results);
+            var results = await query.ToListAsync();
+            return _mapper.Map<List<DonorDTO>>(results);
         }
 
-        public void Add(donorDTO newDonor)
+        public async Task AddAsync(DonorDTO newDonor)
         {
-
             var donor = _mapper.Map<DonorModel>(newDonor);
-
             _context.Donors.Add(donor);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(donorDTO donorDto)
+        public async Task UpdateAsync(DonorDTO donorDto)
         {
-            var existingDonor = _context.Donors.Find(donorDto.Id);
+            var existingDonor = await _context.Donors.FindAsync(donorDto.Id);
             if (existingDonor != null)
             {
                 _mapper.Map(donorDto, existingDonor);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var donor = _context.Donors.Find(id);
+            var donor = await _context.Donors.FindAsync(id);
             if (donor != null)
             {
                 _context.Donors.Remove(donor);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
     }

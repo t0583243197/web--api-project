@@ -2,6 +2,7 @@
 using WebApplication2.Models.DTO; // מייבא DTO של משתמש
 using AutoMapper; // מייבא AutoMapper למיפוי בין DTO ל-Model
 using System.Collections.Generic; // מייבא IEnumerable/List
+using WebApplication2.Models; // מייבא את UserModel
 
 namespace WebApplication2.DAL // מרחב שמות ל-DAL
 { // התחלת namespace

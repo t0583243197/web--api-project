@@ -1,42 +1,78 @@
-using Microsoft.AspNetCore.Authorization; // מייבא Authorize attribute
-using Microsoft.AspNetCore.Mvc; // מייבא MVC attributes
-using WebApplication2.Models.DTO; // מייבא DTOs של מתנות
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using WebApplication2.Models.DTO;
+using WebApplication2.BLL;
 
-[ApiController] // מציין Controller מסוג API
-[Route("api/[controller]")] // נתיב ניתוב
-public class GiftsController : ControllerBase // בקר לטיפול במתנות
-{ // התחלת מחלקה
-    private readonly IGiftBLL _giftBll; // שדה ל-BLL של מתנות
+namespace WebApplication2.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class GiftsController : ControllerBase
+    {
+        private readonly IGiftBLL _giftBll;
 
-    public GiftsController(IGiftBLL giftBll) // בנאי המקבל את ה-BLL
-    { // התחלת בנאי
-        _giftBll = giftBll; // שמירת ה-BLL בשדה
-    } // סיום בנאי
+        public GiftsController(IGiftBLL giftBll)
+        {
+            _giftBll = giftBll;
+        }
 
-    [HttpGet] // פתוח לכולם לצפייה בקטלוג
-    public IActionResult GetAll() => Ok(_giftBll.getAllGifts()); // החזרת כל המתנות
+        [HttpGet]
+        public async Task<ActionResult<List<GiftDTO>>> Get([FromQuery] string? name, [FromQuery] string? donorName, [FromQuery] int? minPurchasers)
+        {
+            var gifts = await _giftBll.GetGiftsByFilterAsync(name, donorName, minPurchasers);
+            return Ok(gifts);
+        }
 
-    [Authorize(Roles = "Manager")] // רק למנהל מחובר
-    [HttpPost] // פעולה להוספה
-    public IActionResult Add([FromBody] GiftDTO gift) // הוספת מתנה חדשה
-    { // התחלת שיטה Add
-        _giftBll.addGift(gift); // קריאה ל-BLL להוספת המתנה
-        return Ok("המתנה נוספה בהצלחה"); // החזרת הצלחה
-    } // סיום שיטה Add
+        [Authorize(Roles = "Manager")]
+        [HttpPost]
+        public async Task<IActionResult> Add([FromBody] GiftDTO gift)
+        {
+            await _giftBll.AddGiftAsync(gift);
+            return Ok("המתנה נוספה בהצלחה");
+        }
 
-    [Authorize(Roles = "Manager")] // רק למנהל
-    [HttpPut] // עדכון מתנה
-    public IActionResult Update([FromBody] GiftDTO gift) // עדכון מתנה
-    { // התחלת שיטה Update
-        _giftBll.updateGift(gift); // קריאה ל-BLL לעדכון
-        return Ok("המתנה עודכנה בהצלחה"); // החזרת הצלחה
-    } // סיום שיטה Update
+        [Authorize(Roles = "Manager")]
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] GiftDTO gift)
+        {
+            await _giftBll.UpdateGiftAsync(gift);
+            return Ok("המתנה עודכנה בהצלחה");
+        }
 
-    [Authorize(Roles = "Manager")] // רק למנהל
-    [HttpDelete("{id}")] // מחיקה לפי Id
-    public IActionResult Delete(int id) // מחיקת מתנה
-    { // התחלת שיטה Delete
-        _giftBll.deleteGift(id); // קריאה ל-BLL למחיקה
-        return Ok("המתנה נמחקה מהמערכת"); // החזרת הצלחה
-    } // סיום שיטה Delete
-} // סיום מחלקה
+        [Authorize(Roles = "Manager")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _giftBll.DeleteGiftAsync(id);
+                return Ok("המתנה נמחקה מהמערכת");
+            }
+            catch (BusinessException ex)
+            {
+                // Business rule violation -> return 409 Conflict with message
+                return Conflict(new { error = ex.Message });
+            }
+            catch (Exception)
+            {
+                // unexpected -> 500
+                return StatusCode(500, new { error = "Internal server error" });
+            }
+        }
+
+        [HttpGet("sorted-by-price")]
+        public async Task<IActionResult> GetGiftsByPrice()
+        {
+            var gifts = await _giftBll.GetGiftsSortedByPriceAsync();
+            return Ok(gifts);
+        }
+
+        [HttpGet("most-purchased")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetMostPurchased()
+        {
+            var gifts = await _giftBll.GetMostPurchasedGiftsAsync();
+            return Ok(gifts);
+        }
+    }
+}

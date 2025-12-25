@@ -22,33 +22,6 @@ namespace WebApplication2.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("OrderModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsDraft")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("TotalAmount")
-                        .HasColumnType("float");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Orders");
-                });
-
             modelBuilder.Entity("UserModel", b =>
                 {
                     b.Property<int>("Id")
@@ -102,6 +75,10 @@ namespace WebApplication2.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -173,7 +150,7 @@ namespace WebApplication2.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OrderModel");
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("WebApplication2.Models.OrderTicketModel", b =>
@@ -190,9 +167,6 @@ namespace WebApplication2.Migrations
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OrderModelId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -204,8 +178,6 @@ namespace WebApplication2.Migrations
                     b.HasIndex("GiftId");
 
                     b.HasIndex("OrderId");
-
-                    b.HasIndex("OrderModelId");
 
                     b.HasIndex("UserModelId");
 
@@ -233,17 +205,6 @@ namespace WebApplication2.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Winners");
-                });
-
-            modelBuilder.Entity("OrderModel", b =>
-                {
-                    b.HasOne("UserModel", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WebApplication2.Models.GiftModel", b =>
@@ -290,10 +251,6 @@ namespace WebApplication2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OrderModel", null)
-                        .WithMany("OrderTickets")
-                        .HasForeignKey("OrderModelId");
-
                     b.HasOne("UserModel", null)
                         .WithMany("Tickets")
                         .HasForeignKey("UserModelId");
@@ -320,11 +277,6 @@ namespace WebApplication2.Migrations
                     b.Navigation("Gift");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OrderModel", b =>
-                {
-                    b.Navigation("OrderTickets");
                 });
 
             modelBuilder.Entity("UserModel", b =>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using WebApplication2.BLL;
 using WebApplication2.Models.DTO;
 
@@ -13,38 +14,37 @@ namespace WebApplication2.Controllers
 
         public DonorController(IDonorBLL donorBll) => _donorBll = donorBll;
 
-        [HttpGet] // פתוח לכולם
-        public IActionResult GetAll() => Ok(_donorBll.GetAllDonors());
+        [HttpGet]
+        public async Task<IActionResult> GetAll() => Ok(await _donorBll.GetAllDonorsAsync());
 
-        // WebApplication2/Controllers/DonorController.cs
-        [HttpGet("search")] // פתוח לכולם
-        public IActionResult Search([FromQuery] string? name, [FromQuery] string? email, [FromQuery] string? giftName)
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] string? email, [FromQuery] string? giftName)
         {
-            var results = _donorBll.GetDonorsByFilter(name, email, giftName);
+            var results = await _donorBll.GetDonorsByFilterAsync(name, email, giftName);
             return Ok(results);
         }
 
-        [Authorize(Roles = "Manager")] // רק למנהל
+        [Authorize(Roles = "Manager")]
         [HttpPost]
-        public IActionResult Add([FromBody] donorDTO donor)
+        public async Task<IActionResult> Add([FromBody] DonorDTO donor)
         {
-            _donorBll.AddDonor(donor);
+            await _donorBll.AddDonorAsync(donor);
             return Ok(new { message = "התורם נוסף בהצלחה!" });
         }
 
-        [Authorize(Roles = "Manager")] // רק למנהל
+        [Authorize(Roles = "Manager")]
         [HttpPut]
-        public IActionResult Update([FromBody] donorDTO donor)
+        public async Task<IActionResult> Update([FromBody] DonorDTO donor)
         {
-            _donorBll.UpdateDonor(donor);
+            await _donorBll.UpdateDonorAsync(donor);
             return Ok(new { message = "התורם עודכן בהצלחה!" });
         }
 
-        [Authorize(Roles = "Manager")] // רק למנהל
+        [Authorize(Roles = "Manager")]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _donorBll.DeleteDonor(id);
+            await _donorBll.DeleteDonorAsync(id);
             return Ok(new { message = "התורם נמחק בהצלחה!" });
         }
     }

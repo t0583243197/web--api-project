@@ -21,19 +21,21 @@ namespace WebApplication2.DAL // מרחב שמות ל-DAL
         public DbSet<TicketModel> Tickets { get; set; } // DbSet לכרטיסים
         protected override void OnModelCreating(ModelBuilder modelBuilder) // קונפיגורציה של מודלים
         { // התחלת שיטה
+          // הגדרת מפתח ראשי
+            modelBuilder.Entity<GiftModel>().HasKey(g => g.Id);
             modelBuilder.Entity<GiftModel>() // קונפיגורציית GiftModel
                 .Property(g => g.TicketPrice) // בחירת שדה TicketPrice
                 .HasColumnType("decimal(18,2)"); // הגדרת סוג עמודה
 
             modelBuilder.Entity<GiftModel>() // קשר Gift -> Donor
-                .HasOne(g => g.Donnor) // לכל מתנה יש תורם
+                .HasOne(g => g.Donor) // לכל מתנה יש תורם
                 .WithMany(d => d.Gifts) // לתורם יכולים להיות רבות מתנות
-                .HasForeignKey(g => g.DonorId); // מפתח זר
+                .HasForeignKey(g => g.DonorId); // העמודה שמקשרת ביניהם
 
             modelBuilder.Entity<GiftModel>() // קשר Gift -> Category
                 .HasOne(g => g.Category) // לכל מתנה יש קטגוריה
                 .WithMany(c => c.Gifts) // לקטגוריה יכולות להיות רבות מתנות
-                .HasForeignKey(g => g.CategoryId); // מפתח זר
+                .HasForeignKey(g => g.CategoryId); // העמודה שמקשרת ביניהם
 
             modelBuilder.Entity<OrderTicketModel>() // קשר OrderItem -> Order
                 .HasOne(oi => oi.Order) // לכל פריט יש הזמנה

@@ -11,12 +11,10 @@
         public int CategoryId { get; set; } // מפתח זר לקטגוריה
         public CategoryModel Category { get; set; } = null!; // הניווט לקטגוריה
 
-        public int DonorId { get; set; }
-        public DonorModel Donnor { get; set; } = null!;
+        public int DonorId { get; set; } // מזהה תורם
+        public DonorModel Donor { get; set; } = null!; // הניווט לתורם
 
        
-
-
     } 
 // סיום מחלקה
 } // סיום namespace
