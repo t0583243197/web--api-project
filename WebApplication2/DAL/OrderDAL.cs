@@ -40,5 +40,11 @@ namespace WebApplication2.DAL
                 .Where(o => o.UserId == userId && o.IsDraft == true)
                 .ToList();
         }
+        public async Task<bool> HasOrdersForGiftAsync(int giftId)
+        {
+            // הבדיקה ניגשת לטבלת הכרטיסים ובודקת אם קיים לפחות כרטיס אחד למתנה זו
+            // השתמשנו ב-AnyAsync כי זה הרבה יותר מהיר מ-Count (הוא עוצר ברגע שהוא מוצא את הראשון)
+            return await _context.OrderTicket.AnyAsync(t => t.GiftId == giftId);
+        }
     }
 }

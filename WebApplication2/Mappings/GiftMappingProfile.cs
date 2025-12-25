@@ -11,14 +11,22 @@ namespace WebApplication2.Mappings // מרחב למיפויים
         { // התחלת בנאי
             // --- מיפוי מתנות ---
           
+            // DTO -> Model
+            // חשוב: ב־GiftDTO שדה Category הוא מחרוזת (string), לכן לא ניתן לקרוא src.Category.Name.
+            // כדי לא לייצר שגיאות ושרשראות, נוותר על מיפוי ישיר של הניווטים כאן ונמפה רק שדות פשוטים.
             CreateMap<GiftDTO, GiftModel>()
                 .ForMember(dest => dest.TicketPrice, opt => opt.MapFrom(src => src.TicketPrice))
-                // map or resolve Category; ignore for now if you set Category separately
+                // אל תנסו למxxx שדות ניווט/אובייקטיים ישירות מכיוון ש־GiftDTO.Category הוא string.
+                // השארת Category ו־Donor להתנהלות ידנית (BLL/EF) מונעת circular references ושגיאות קומפילציה.
                 .ForMember(dest => dest.Category, opt => opt.Ignore())
-                // avoid setting navigation back to donor here (EF will set DonorId)
                 .ForMember(dest => dest.Donor, opt => opt.Ignore());
 
-            CreateMap<GiftModel, GiftDTO>();
+            // Model -> DTO
+            // כאן מומלץ למxxx את שדה ה־Category ל־string ב־DTO בעזרת src.Category.Name (כשהניווט קיים).
+            CreateMap<GiftModel, GiftDTO>()
+                .ForMember(dest => dest.TicketPrice, opt => opt.MapFrom(src => src.TicketPrice))
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null))
+                .ForMember(dest => dest.DonorName, opt => opt.MapFrom(src => src.Donor != null ? src.Donor.Name : null));
 
             // --- מיפוי תורמים (תיקון רישיות) ---
             CreateMap<DonorModel, DonorDTO>()

@@ -2,8 +2,8 @@
 {
     public class PurchaserDetailsDto
     {
-        public string CustomerName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
+        public string CustomerName { get; set; }
+        public string Email { get; set; }
         public int TicketsCount { get; set; }
     }
 }

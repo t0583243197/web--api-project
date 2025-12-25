@@ -11,7 +11,7 @@ using AutoMapper; // מייבא AutoMapper
 // Program.cs – תמצית ותפקיד הקובץ
 // -----------------------------
 // קובץ האתחול של היישום (entry point) ב־ASP.NET Core (Razor Pages).
-// - מקים WebApplicationBuilder ומשתמש ב־DI להוספת שירותים (Services).
+// - מקים WebApplicationBuilder ומשתמש ב־DI להוספה שירותים (Services).
 // - מגדיר אמצעי אימות/אבטחה (Authentication / Authorization).
 // - מגדיר Swagger לפיתוח/תיעוד API.
 // - בונה שרשרת מידלוואר (Middleware) ומתחיל את היישום באמצעות app.Run().
@@ -122,6 +122,8 @@ builder.Services.AddScoped<ICategoryBLL, CategoryServiceBLL>(); // רישום Ca
 builder.Services.AddScoped<IOrderDal, OrderDAL>(); // רישום OrderDAL (אם קיים)
 builder.Services.AddScoped<IOrderBLL, OrderServiceBLL>(); // רישום Order BLL (אם קיים)
 
+
+
 // דוגמה של רישום מותאם: יצירת UserDAL עם תלויות ידניות מה־DI (context + mapper).
 // שימוש ב־factory שימושי כאשר הבנאי של השירות דורש פרמטרים או לוגיקה מיוחדת.
 builder.Services.AddScoped<IUserDal, UserDAL>(provider => // רישום מותאם של UserDAL
@@ -156,11 +158,18 @@ app.Use(async (context, next) => // Middleware לטיפול גלובלי בשג�
     {
         // לוג בסיסי לקונסולה — עדיף להשתמש ב־ILogger במערכת אמיתית.
         Console.WriteLine($"[ERROR LOG]: {ex.Message}"); // רישום שגיאה בקונסולה
+        context.Response.ContentType = "application/json";
 
-        // החזרת תשובת שגיאה סטנדרטית עם JSON. היזהר לא לכלול מידע סודי בהודעה.
-        context.Response.StatusCode = 500; // סטטוס שגיאה
-        context.Response.ContentType = "application/json"; // סוג תוכן JSON
-        await context.Response.WriteAsJsonAsync(new { error = "אירעה שגיאה בשרת", message = ex.Message }); // החזרת פרטי שגיאה ללקוח
+        if (ex is BusinessException) // map business errors to 409 Conflict (or 400)
+        {
+            context.Response.StatusCode = 409;
+            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+        }
+        else
+        {
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsJsonAsync(new { error = "אירעה שגיאה בשרת" });
+        }
     }
 });
 
