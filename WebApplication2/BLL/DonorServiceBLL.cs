@@ -37,16 +37,19 @@ namespace WebApplication2.BLL
         //אלא משאירה לך את ההחלטה על כך.
 
 
-        public async Task<List<DonorDTO>> GetAllDonorsAsync() => await _donorDal.GetAllAsync();
+//  
+//=
+        public  async Task<List<DonorDTO>> GetAllDonorsAsync() =>await _donorDal.GetAll();
+
 
         public Task<List<DonorDTO>> GetDonorsByFilterAsync(string? name, string? email, string? giftName)
-            => _donorDal.GetByFilterAsync(name, email, giftName);
+            => _donorDal.GetByFilter(name, email, giftName);
 
-        public Task AddDonorAsync(DonorDTO donor) => _donorDal.AddAsync(donor);
+        public Task AddDonorAsync(DonorDTO donor) => _donorDal.Add(donor);
 
-        public Task UpdateDonorAsync(DonorDTO donor) => _donorDal.UpdateAsync(donor);
+        public Task UpdateDonorAsync(DonorDTO donor) => _donorDal.Update(donor);
 
-        public Task DeleteDonorAsync(int id) => _donorDal.DeleteAsync(id);
+        public Task DeleteDonorAsync(int id) => _donorDal.Delete(id);
     }
 
 

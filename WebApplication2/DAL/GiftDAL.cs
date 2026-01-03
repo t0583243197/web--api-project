@@ -6,6 +6,8 @@ using AutoMapper.QueryableExtensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
+using System.Linq.Expressions;
 
 namespace WebApplication2.DAL
 {
@@ -20,11 +22,9 @@ namespace WebApplication2.DAL
             _mapper = mapper;
         }
 
-        public async Task<List<GiftDTO>> GetByFilterAsync(string? name, string? donorName, int? minPurchasers)
+        public async Task<List<GiftDTO>> GetByFilter(string? name, string? donorName, int? minPurchasers)
         {
-            var query = _context.Gifts
-                .Include(g => g.Donor)
-                .AsQueryable();
+            var query = _context.Gifts.AsQueryable();
 
             if (!string.IsNullOrEmpty(name))
                 query = query.Where(g => EF.Functions.Like(g.Name, $"%{name}%"));
@@ -42,42 +42,41 @@ namespace WebApplication2.DAL
             }
 
             return await query
+                .AsNoTracking()
                 .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 
-        public Task<List<GiftDTO>> GetGiftsSortedByPriceAsync() =>
+        public Task<List<GiftDTO>> GetGiftsSortedByPrice() =>
             _context.Gifts
+                .AsNoTracking()
                 .OrderByDescending(g => g.TicketPrice)
                 .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
-        public Task<List<GiftDTO>> GetMostPurchasedGiftsAsync() =>
+        public Task<List<GiftDTO>> GetMostPurchasedGifts() =>
             _context.Gifts
+                .AsNoTracking()
                 .OrderByDescending(g => _context.OrderTicket.Where(t => t.GiftId == g.Id).Sum(t => t.Quantity))
                 .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
-        public async Task AddAsync(GiftDTO giftDto)
+        public async Task Add(GiftDTO giftDto)
         {
-            // map basic fields
             var gift = _mapper.Map<GiftModel>(giftDto);
 
-            // resolve category by name
             var category = await _context.Categories
                 .FirstOrDefaultAsync(c => c.Name == giftDto.Category);
             if (category == null)
             {
-                // either create new category or return error
                 category = new CategoryModel { Name = giftDto.Category };
                 _context.Categories.Add(category);
-                await _context.SaveChangesAsync(); // now category.Id is set
+                await _context.SaveChangesAsync();
             }
 
             gift.CategoryId = category.Id;
-            gift.Category = null; // avoid EF interpreting it as a new entity
+            gift.Category = null;
 
-            // resolve donor similarly (by name) or ensure DonorId is set
             var donor = await _context.Donors.FirstOrDefaultAsync(d => d.Name == giftDto.DonorName);
             if (donor != null) gift.DonorId = donor.Id;
 
@@ -85,7 +84,7 @@ namespace WebApplication2.DAL
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(GiftDTO giftDto)
+        public async Task Update(GiftDTO giftDto)
         {
             var existingGift = await _context.Gifts.FindAsync(giftDto.Id);
             if (existingGift != null)
@@ -95,22 +94,52 @@ namespace WebApplication2.DAL
             }
         }
 
-        public async Task DeleteAsync(int id)
+        // Connected partial update for Gift:
+        // Example: await UpdatePartialAsync(giftId, g => g.TicketPrice = 9.99m, g => g.TicketPrice);
+        public async Task UpdatePartial(int id, Action<GiftModel> setValues, params Expression<Func<GiftModel, object>>[] modifiedProperties)
+        {
+            var entity = new GiftModel { Id = id };
+            _context.Gifts.Attach(entity);
+            setValues(entity);
+
+            var entry = _context.Entry(entity);
+            foreach (var prop in modifiedProperties)
+            {
+                var propName = GetPropertyName(prop);
+                entry.Property(propName).IsModified = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Soft-delete for Gift
+        public async Task Delete(int id)
         {
             var gift = await _context.Gifts.FindAsync(id);
             if (gift != null)
             {
-                _context.Gifts.Remove(gift);
+                gift.IsDeleted = true;
                 await _context.SaveChangesAsync();
             }
         }
 
-        public async Task<List<GiftDTO>> GetAllAsync()
+        public async Task<List<GiftDTO>> GetAll()
         {
-            var gifts = await _context.Gifts
-                .Include(g => g.Donor)
+            return await _context.Gifts
+                .AsNoTracking()
+                .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
-            return _mapper.Map<List<GiftDTO>>(gifts);
+        }
+
+        private static string GetPropertyName<T>(Expression<Func<T, object>> expression)
+        {
+            if (expression.Body is MemberExpression member)
+                return member.Member.Name;
+
+            if (expression.Body is UnaryExpression unary && unary.Operand is MemberExpression memberOperand)
+                return memberOperand.Member.Name;
+
+            throw new ArgumentException("Invalid expression");
         }
     }
 }

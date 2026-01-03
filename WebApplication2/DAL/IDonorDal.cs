@@ -6,10 +6,10 @@ namespace WebApplication2.DAL
 {
     public interface IDonorDal
     {
-        Task<List<DonorDTO>> GetAllAsync();
-        Task<List<DonorDTO>> GetByFilterAsync(string? name, string? email, string? giftName);
-        Task AddAsync(DonorDTO newDonor);
-        Task UpdateAsync(DonorDTO donorDto);
-        Task DeleteAsync(int id);
+        Task<List<DonorDTO>> GetAll();
+        Task<List<DonorDTO>> GetByFilter(string? name, string? email, string? giftName);
+        Task Add(DonorDTO donor);
+        Task Update(DonorDTO donor);
+        Task Delete(int id);
     }
 }

@@ -17,28 +17,28 @@ namespace WebApplication2.BLL
             _orderDal = orderDal ?? throw new ArgumentNullException(nameof(orderDal));
         }
 
-        public Task<List<GiftDTO>> GetAllGiftsAsync() => _giftDal.GetAllAsync();
+        public Task<List<GiftDTO>> GetAllGiftsAsync() => _giftDal.GetAll();
 
         public Task<List<GiftDTO>> GetGiftsByFilterAsync(string? name, string? donorName, int? minPurchasers)
-            => _giftDal.GetByFilterAsync(name, donorName, minPurchasers);
+            => _giftDal.GetByFilter(name, donorName, minPurchasers);
 
-        public Task<List<GiftDTO>> GetGiftsSortedByPriceAsync() => _giftDal.GetGiftsSortedByPriceAsync();
+        public Task<List<GiftDTO>> GetGiftsSortedByPriceAsync() => _giftDal.GetGiftsSortedByPrice();
 
-        public Task<List<GiftDTO>> GetMostPurchasedGiftsAsync() => _giftDal.GetMostPurchasedGiftsAsync();
+        public Task<List<GiftDTO>> GetMostPurchasedGiftsAsync() => _giftDal.GetMostPurchasedGifts();
 
-        public Task AddGiftAsync(GiftDTO gift) => _giftDal.AddAsync(gift);
+        public Task AddGiftAsync(GiftDTO gift) => _giftDal.Add(gift);
 
-        public Task UpdateGiftAsync(GiftDTO gift) => _giftDal.UpdateAsync(gift);
+        public Task UpdateGiftAsync(GiftDTO gift) => _giftDal.Update(gift);
 
         public async Task DeleteGiftAsync(int id)
         {
             // Check if there are orders for this gift; if yes, prevent deletion.
-            bool hasOrders = await _orderDal.HasOrdersForGiftAsync(id);
+            bool hasOrders = await _orderDal.HasOrdersForGift(id);
 
             if (hasOrders)
                 throw new BusinessException("לא ניתן למחוק את המתנה כיוון שכבר נרכשו עבורה כרטיסים.");
 
-            await _giftDal.DeleteAsync(id);
+            await _giftDal.Delete(id);
         }
     }
 

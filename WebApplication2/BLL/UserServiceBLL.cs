@@ -3,6 +3,7 @@ using WebApplication2.Models.DTO; // Importing User DTOs
 using System; // Importing for Exception handling
 using System.Linq; // Importing FirstOrDefault and LINQ
 using System.Text.RegularExpressions; // Required for Regex validation
+using System.Threading.Tasks; // Add this if not already present
 
 namespace WebApplication2.BLL // BLL namespace
 {
@@ -15,7 +16,7 @@ namespace WebApplication2.BLL // BLL namespace
             _userDal = userDal; // Storing DAL in field
         }
 
-        public void AddUser(UserDto userDto) // User registration method
+        public async Task AddUser(UserDto userDto) // Make method async
         {
             if (string.IsNullOrEmpty(userDto.Role)) // Check if role is not defined
             {
@@ -40,22 +41,35 @@ namespace WebApplication2.BLL // BLL namespace
                 throw new ArgumentException("Name must contain only letters.");
             }
 
-            // Additional check to ensure email is unique
-            var existingUser = _userDal.GetAll().FirstOrDefault(u => u.Email == userDto.Email);
+            // Await the GetAll() call and then use FirstOrDefault
+            var users = await _userDal.GetAll();
+            var existingUser = users.FirstOrDefault(u => u.Email == userDto.Email);
             if (existingUser != null)
             {
                 throw new ArgumentException("Email is already registered.");
             }
 
-            _userDal.Add(userDto); // Save via DAL
+            await _userDal.Add(userDto); // Await Add as well
         }
 
-        public UserDto ValidateUser(string email, string password) // User validation for Login
+        public async Task<UserDto> ValidateUser(string email, string password)
         {
-            var allUsers = _userDal.GetAll(); // Fetch all users
-            return allUsers.FirstOrDefault(u => u.Email == email && u.Password == password); // Return match or null
-        }
+            // שליפת המשתמש המלא כולל הסיסמה
+            var user = await _userDal.GetFullUserByEmailAsync(email);
 
+            // בדיקה שהמשתמש קיים והסיסמה תואמת במדויק
+            if (user != null && user.Password == password)
+            {
+                // מחזירים DTO ללא הסיסמה לצורך יצירת ה-Token
+                return new UserDto
+                {
+                    Email = user.Email,
+                    Role = user.Role.ToString(),
+                    Name = user.Name
+                };
+            }
+            return null;
+        }
         private bool IsValidEmail(string email)
         {
             // Simple regex for email validation

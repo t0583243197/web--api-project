@@ -2,8 +2,8 @@
 
 public interface ICategoryBLL
 {
-    List<CategoryDTO> GetAllCategories();
-    void AddCategory(CategoryDTO category);
-    void UpdateCategory(CategoryDTO category);
-    void DeleteCategory(int id);
+    Task<List<CategoryDTO>> GetAllCategories();
+    Task AddCategory(CategoryDTO category);
+    Task UpdateCategory(CategoryDTO category);
+    Task DeleteCategory(int id);
 }

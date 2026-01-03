@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 using WebApplication2.Models.DTO;
 using WebApplication2.BLL;
 
@@ -17,7 +19,7 @@ namespace WebApplication2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<GiftDTO>>> Get([FromQuery] string? name, [FromQuery] string? donorName, [FromQuery] int? minPurchasers)
+        public async Task<ActionResult> Get([FromQuery] string? name, [FromQuery] string? donorName, [FromQuery] int? minPurchasers)
         {
             var gifts = await _giftBll.GetGiftsByFilterAsync(name, donorName, minPurchasers);
             return Ok(gifts);
@@ -50,12 +52,10 @@ namespace WebApplication2.Controllers
             }
             catch (BusinessException ex)
             {
-                // Business rule violation -> return 409 Conflict with message
                 return Conflict(new { error = ex.Message });
             }
             catch (Exception)
             {
-                // unexpected -> 500
                 return StatusCode(500, new { error = "Internal server error" });
             }
         }

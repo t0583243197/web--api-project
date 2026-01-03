@@ -1,12 +1,14 @@
-﻿using WebApplication2.Models.DTO;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using WebApplication2.Models.DTO;
 
 namespace WebApplication2.DAL
 {
     public interface ICategoryDal
     {
-        List<CategoryDTO> GetAll();
-        void Add(CategoryDTO category);
-        void Update(CategoryDTO category); // חדש
-        void Delete(int id); // חדש
+        Task<List<CategoryDTO>> GetAll();
+        Task Add(CategoryDTO category);
+        Task Update(CategoryDTO category);
+        Task Delete(int id);
     }
 }

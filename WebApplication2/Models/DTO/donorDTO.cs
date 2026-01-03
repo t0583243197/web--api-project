@@ -2,12 +2,12 @@
 {
     public class DonorDTO
     {
-        public int Id { get; set; } // מזהה התורם לצורך עדכון/מחיקה
-        public string Name { get; set; } // שם התורם לתצוגה ברשימה
+        public int Id { get; set; }
+        public string Name { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string Address { get; set; } = string.Empty;
 
-        public string Email { get; set; } // מייל התורם
-        public string? Address { get; set; } // כתובת התורם
-
-        public List<GiftDTO>? Gifts { get; set; }
+        // Ensure this is a DTO list, not model list
+        public List<GiftDTO> Gifts { get; set; } = new List<GiftDTO>();
     }
 }

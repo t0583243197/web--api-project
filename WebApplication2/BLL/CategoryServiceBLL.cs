@@ -1,5 +1,7 @@
 ﻿using WebApplication2.DAL;
 using WebApplication2.Models.DTO;
+using System.Threading.Tasks;
+using System.Collections.Generic; // Add this using directive
 
 public class CategoryServiceBLL : ICategoryBLL
 {
@@ -10,8 +12,8 @@ public class CategoryServiceBLL : ICategoryBLL
         _categoryDal = categoryDal;
     }
 
-    public List<CategoryDTO> GetAllCategories() => _categoryDal.GetAll();
-    public void AddCategory(CategoryDTO category) => _categoryDal.Add(category);
-    public void UpdateCategory(CategoryDTO category) => _categoryDal.Update(category);
-    public void DeleteCategory(int id) => _categoryDal.Delete(id);
+    public async Task<List<CategoryDTO>> GetAllCategories() => await _categoryDal.GetAll();
+    public async Task AddCategory(CategoryDTO category) => await _categoryDal.Add(category);
+    public async Task UpdateCategory(CategoryDTO category) => await _categoryDal.Update(category);
+    public async Task DeleteCategory(int id) => await _categoryDal.Delete(id);
 }

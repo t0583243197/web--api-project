@@ -20,9 +20,9 @@ namespace WebApplication2.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDTO login)
+        public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
-            var user = _userBll.ValidateUser(login.Email, login.Password);
+            var user = await _userBll.ValidateUser(login.Email, login.Password);
 
             if (user != null)
             {

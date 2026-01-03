@@ -22,11 +22,10 @@ namespace WebApplication2.BLL
             _mapper = mapper; // <-- Assign mapper
         }
 
-        public Task<List<PurchaserDetailsDto>> GetPurchasersForGiftAsync(int giftId)
+        public async Task<List<PurchaserDetailsDto>> GetPurchasersForGiftAsync(int giftId)
         {
-            // אם IOrderDal אינו אסינכרוני, עטיפה ב-Task.FromResult לשמירה על API אסינכרוני
-            var result = _orderDal.GetPurchasersByGiftId(giftId);
-            return Task.FromResult(result);
+            // אם IOrderDal.GetPurchasersByGiftId מחזיר Task, יש להמתין לו
+            return await _orderDal.GetPurchasersByGiftId(giftId);
         }
 
         public async Task<int> PlaceOrderAsync(OrderDTO Dto)
@@ -36,7 +35,7 @@ namespace WebApplication2.BLL
             var orderTickets = new List<OrderTicketModel>();
 
             // שליפת כל המתנות בצורה אסינכרונית כדי לקבל מחירים עדכניים
-            var gifts = await _giftDal.GetAllAsync();
+            var gifts = await _giftDal.GetAll();
 
             foreach (var itemDto in Dto.OrderItems)
             {
@@ -62,14 +61,14 @@ namespace WebApplication2.BLL
             };
 
             // אם IOrderDal.AddOrder הוא סינכרוני – נשמור קריאה סינכרונית (אפשר לעדכן ל‑AddOrderAsync מאוחר יותר)
-            var orderId = _orderDal.AddOrder(newOrder);
-            return orderId;
+            var orderId = await Task.Run(() => _orderDal.AddOrder(newOrder));
+            return orderId; // <-- Fixed: return int directly, not Task<int>
         }
 
         public async Task<List<OrderDTO>> GetUserHistoryAsync(int userId)
         {
             // שליפת הנתונים מה-DAL
-            var orders = _orderDal.GetUserOrders(userId);
+            var orders = await _orderDal.GetUserOrders(userId);
 
             if (orders == null || !orders.Any()) return new List<OrderDTO>();
 
