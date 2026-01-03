@@ -2,6 +2,7 @@
 {
     public class PurchaserDetailsDto
     {
+        // מחלקה שנועדה לשמור פרטי רוכש 
         public string CustomerName { get; set; }
         public string Email { get; set; }
         public int TicketsCount { get; set; }

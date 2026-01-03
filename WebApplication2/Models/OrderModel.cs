@@ -2,7 +2,7 @@
 {
     public class OrderModel
     {
-       
+        // ההזמנה הסופית של כל הכרטיסים שאדם רכש להגרלה
             public int Id { get; set; } // מפתח ראשי להזמנה
             public int UserId { get; set; } // מזהה המשתמש שביצע את הרכישה [cite: 30]
             public UserModel User { get; set; } // אובייקט המשתמש הרוכש

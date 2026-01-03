@@ -39,7 +39,7 @@ namespace WebApplication2.Mappings // מרחב למיפויים
 
             // --- מיפוי קטגוריות ---
             CreateMap<CategoryModel, CategoryDTO>().ReverseMap();
-
+            CreateMap<WinnerModel, WinnerDTO>().ReverseMap();
             // --- מיפוי משתמשים ---
             CreateMap<UserDto, UserModel>().ReverseMap();
             

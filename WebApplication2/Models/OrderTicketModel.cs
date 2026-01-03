@@ -2,7 +2,7 @@
 {
     public class OrderTicketModel
     {
-
+        // פריט בהזמנה שמייצג כרטיסים שנרכשו למתנה מסוימת
         public int Id { get; set; } // מזהה פריט
         public int OrderId { get; set; } // קישור להזמנה האם
         public OrderModel Order { get; set; } // קישור להזמנה 

@@ -43,6 +43,25 @@ namespace WebApplication2.DAL // מרחב שמות ל-DAL
                 .HasForeignKey(oi => oi.OrderId); // מפתח זר
 
             base.OnModelCreating(modelBuilder); // קריאה למימוש הבסיסי
-        } // סיום שיטה
+
+            modelBuilder.Entity<WinnerModel>().HasKey(w => w.Id);
+
+            // קשר זוכה -> מתנה (1 ל-1 או 1 ל-רבים תלוי בלוגיקה, כאן נגדיר שלכל זכייה יש מתנה אחת)
+            modelBuilder.Entity<WinnerModel>()
+                .HasOne(w => w.Gift) // אובייקט המתנה בתוך מודל הזוכה
+                .WithMany()            // למתנה יכולים להיות מספר זוכים (למשל בהגרלות שונות)
+                .HasForeignKey(w => w.GiftId)
+                .OnDelete(DeleteBehavior.Restrict); // מניעת מחיקה משורשרת כדי לשמור על היסטוריה
+
+            // קשר זוכה -> משתמש/רוכש
+            modelBuilder.Entity<WinnerModel>()
+                .HasOne(w => w.User)   // המשתמש שזכה
+                .WithMany()            // למשתמש יכולות להיות מספר זכיות
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            base.OnModelCreating(modelBuilder);
+        
+    } // סיום שיטה
     } // סיום מחלקה
 } // סיום namespace
