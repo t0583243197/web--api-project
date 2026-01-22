@@ -39,9 +39,33 @@ namespace WebApplication2.Controllers
         // POST api/winner
         [HttpPost]
         [Authorize(Roles = "Manager")]
-        public async Task Post([FromBody] WinnerModel winnerModel)
+        public async Task<IActionResult> Post([FromBody] WinnerModel winnerModel)
         {
-            await _winnerDal.AddWinner(winnerModel);
+            try
+            {
+                await _winnerDal.AddWinner(winnerModel);
+                
+                // שליחת מייל אוטומטית לזוכה
+                var winner = await _winnerDal.WinnerBYId(winnerModel.Id);
+                if (winner != null)
+                {
+                    await _emailService.SendWinnerNotificationAsync(
+                        winner.User.Email,
+                        winner.User.Name,
+                        winner.Gift.Name
+                    );
+                }
+                
+                return Ok("זוכה נוסף בהצלחה ומייל נשלח");
+            }
+            catch (BusinessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"שגיאה: {ex.Message}");
+            }
         }
   
 

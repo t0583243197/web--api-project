@@ -68,5 +68,23 @@ namespace WebApplication2.Controllers
                 return StatusCode(500, "אירעה שגיאה בעת fetch היסטוריית ההזמנה");
             }
         }
+
+        [HttpPost("confirm/{orderId}")]
+        public async Task<IActionResult> ConfirmOrder(int orderId)
+        {
+            try
+            {
+                await _orderBll.ConfirmOrderAsync(orderId);
+                return Ok("ההזמנה אושרה בהצלחה");
+            }
+            catch (BusinessException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "אירעה שגיאה באישור ההזמנה");
+            }
+        }
     }
 }

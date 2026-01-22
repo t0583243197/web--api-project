@@ -49,6 +49,9 @@ namespace WebApplication2.Controllers
         [HttpPost("register")]
         public IActionResult Register([FromBody] UserDto userDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+                
             _userBll.AddUser(userDto);
             return Ok(new { message = "User registered successfully. You can now log in." });
         }

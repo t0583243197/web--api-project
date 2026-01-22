@@ -21,11 +21,19 @@ namespace WebApplication2.DAL
         
         public async Task AddWinner(WinnerModel winnerModel)
         {
-            //var WinnerModel = _mapper.Map<WinnerModel>(winnerDTO); // המרת DTO ל-Model
+            // בדיקה שיש רוכשים למתנה
+            var hasPurchasers = await _context.OrderTicket
+                .AnyAsync(ot => ot.GiftId == winnerModel.GiftId && ot.Order.IsDraft == false);
+            
+            if (!hasPurchasers)
+            {
+                throw new BusinessException("לא ניתן להגריל מתנה שלא נרכשה על ידי אף אחד");
+            }
+            
             try
             {
-                _context.Winners.Add(winnerModel); // הוספה ל-DbSet
-                _context.SaveChangesAsync(); // שמירה למסד הנתונים
+                _context.Winners.Add(winnerModel);
+                await _context.SaveChangesAsync();
             }
             catch
             {

@@ -10,5 +10,6 @@ namespace WebApplication2.BLL
         Task<List<PurchaserDetailsDto>> GetPurchasersForGiftAsync(int giftId);
         Task<List<OrderDTO>> GetUserHistoryAsync(int userId);
         Task ConfirmOrderAsync(int orderId);
+        Task RemoveOrderItemAsync(int orderId, int giftId);
     }
 }

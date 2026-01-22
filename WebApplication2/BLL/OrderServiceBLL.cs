@@ -69,6 +69,7 @@ namespace WebApplication2.BLL
                 UserId = Dto.UserId,
                 OrderDate = DateTime.Now,
                 TotalAmount = (double)totalSum, // Explicit cast from decimal to double
+                IsDraft = true, // הזמנה בטיוטה כברירת מחדל
                 OrderItems = orderTickets
             };
 
@@ -94,6 +95,26 @@ namespace WebApplication2.BLL
             if (!success)
             {
                 throw new BusinessException("הזמנה לא נמצאה");
+            }
+        }
+
+        public async Task RemoveOrderItemAsync(int orderId, int giftId)
+        {
+            var order = await _orderDal.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                throw new BusinessException("הזמנה לא נמצאה");
+            }
+
+            if (!order.IsDraft)
+            {
+                throw new BusinessException("לא ניתן לשנות הזמנה לאחר רכישה");
+            }
+
+            bool success = await _orderDal.RemoveOrderItemAsync(orderId, giftId);
+            if (!success)
+            {
+                throw new BusinessException("פריט לא נמצא בהזמנה");
             }
         }
     }
