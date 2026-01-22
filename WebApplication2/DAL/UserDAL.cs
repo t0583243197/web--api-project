@@ -29,18 +29,23 @@ namespace WebApplication2.DAL
 
         public async Task Add(UserDto userDto)
         {
+            Console.WriteLine($"=== UserDAL.Add called for: {userDto.Email} ===");
 
-            if (!Enum.TryParse<UserRole>(userDto.Role, true, out _))//true- אומר שלא יהיה רגישות לגודל האותיות שגם עם ב
-                                                                    //enum
-                                                                    //נכתב באותיות גדולות יזהה עם עכשיו נכתוב באותיות קטנות
-                                                                    // out- מגדיר שיחזור מהפונקציה ערך
-                                                                    // Boolean
-                                                                    // המציין האם ההמרה הצליחה
+            if (!Enum.TryParse<UserRole>(userDto.Role, true, out _))
                 throw new ArgumentException("Invalid role");
 
             var userModel = _mapper.Map<UserModel>(userDto);
+            Console.WriteLine($"Mapped to UserModel: {userModel.Email}, Role: {userModel.Role}");
+            
             _context.Users.Add(userModel);
-            await _context.SaveChangesAsync();
+            Console.WriteLine("Added to context");
+            
+            var result = await _context.SaveChangesAsync();
+            Console.WriteLine($"SaveChanges result: {result} rows affected");
+            
+            // בדיקה נוספת
+            var savedUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == userDto.Email);
+            Console.WriteLine($"User found after save: {savedUser != null}");
         }
 
         // Read-only: use ProjectTo and AsNoTracking.

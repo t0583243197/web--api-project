@@ -4,6 +4,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using WebApplication2.Models;
 using WebApplication2.Models.DTO;
+using WebApplication2.BLL;
 
 namespace WebApplication2.DAL
 {
