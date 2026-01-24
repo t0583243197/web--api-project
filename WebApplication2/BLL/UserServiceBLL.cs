@@ -85,8 +85,8 @@ namespace WebApplication2.BLL // BLL namespace
 
         private bool IsValidName(string name)
         {
-            // Check if name contains only letters
-            return !string.IsNullOrEmpty(name) && name.All(char.IsLetter);
+            // מאפשר אותיות בכל שפה, רווחים ותווים מיוחדים נפוצים
+            return !string.IsNullOrEmpty(name) && name.All(c => char.IsLetter(c) || char.IsWhiteSpace(c) || c == '\'' || c == '-');
         }
     }
 }

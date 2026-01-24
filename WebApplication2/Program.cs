@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore; // מייבא EF Core
 using WebApplication2.BLL; // מייבא BLL
 using WebApplication2.DAL; // מייבא DAL
+using WebApplication2.Models; // מייבא Models
 using Microsoft.AspNetCore.Authentication.JwtBearer; // מייבא הגדרות JWT
 using Microsoft.IdentityModel.Tokens; // מייבא סוגי טוקן
 using Microsoft.OpenApi.Models; // מייבא סוגי OpenAPI
@@ -121,6 +122,14 @@ builder.Services.AddScoped<ICategoryDal, CategoryDAL>(); // רישום CategoryD
 builder.Services.AddScoped<ICategoryBLL, CategoryServiceBLL>(); // רישום Category BLL (אם קיים)
 builder.Services.AddScoped<IOrderDal, OrderDAL>(); // רישום OrderDAL (אם קיים)
 builder.Services.AddScoped<IOrderBLL, OrderServiceBLL>(); // רישום Order BLL (אם קיים)
+builder.Services.AddScoped<RaffleSarviceBLL>(); // רישום Raffle Service
+builder.Services.AddScoped<IWinnerDAL, WinnerDal>(provider => // רישום מותאם של WinnerDAL
+{
+    var context = provider.GetRequiredService<StoreContext>(); // קבלת StoreContext מ־D׉I
+    var mapper = provider.GetRequiredService<IMapper>(); // קבלת IMapper מ־D׉I
+    var logger = provider.GetRequiredService<ILogger<WinnerDal>>(); // קבלת ILogger מ־D׉I
+    return new WinnerDal(context, mapper, logger); // יצירת מופע WinnerDal
+});
 
 
 
@@ -133,10 +142,23 @@ builder.Services.AddScoped<IUserDal, UserDAL>(provider => // רישום מותא
     return new UserDAL(context, mapper); // יצירת מופע UserDAL
 });
 builder.Services.AddScoped<IUserBll, UserServiceBLL>(); // רישום User BLL
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings")); // רישום הגדרות מייל
+builder.Services.AddScoped<IEmailService, EmailService>(); // רישום Email Service
 
 // רישום MVC controllers ו־Razor Pages (הפרויקט הוא Razor Pages ולכן חשוב).
 builder.Services.AddControllers(); // רישום Controllers (למקרה שיש API controllers)
 builder.Services.AddRazorPages(); // רישום Razor Pages (UI הפניה לדפים)
+
+// הוספת CORS לאנגולר
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // -----------------------------
 // בנייה והרצת היישום
@@ -195,6 +217,9 @@ else // במצב פרודקשן
 app.UseHttpsRedirection(); // ניתוב אוטומטי ל־HTTPS (אם זמין)
 app.UseStaticFiles(); // הגשת קבצים סטטיים מתיקיית wwwroot
 app.UseRouting(); // הפעלת ניתוב — חייב לפני UseAuthentication/UseAuthorization
+
+// הפעלת CORS
+app.UseCors("AllowAngular");
 
 // סדר חשוב:
 // 1. UseAuthentication() – מאמת Identity מהבקשה (מממש את ה־Principal).

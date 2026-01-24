@@ -67,5 +67,38 @@ namespace WebApplication2.DAL
         {
             return await _context.OrderTicket.AnyAsync(t => t.GiftId == giftId);
         }
+
+        public async Task<bool> ConfirmOrderAsync(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order != null)
+            {
+                order.IsDraft = false;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<OrderModel> GetOrderByIdAsync(int orderId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
+        public async Task<bool> RemoveOrderItemAsync(int orderId, int giftId)
+        {
+            var orderItem = await _context.OrderTicket
+                .FirstOrDefaultAsync(ot => ot.OrderId == orderId && ot.GiftId == giftId);
+            
+            if (orderItem != null)
+            {
+                _context.OrderTicket.Remove(orderItem);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
     }
 }

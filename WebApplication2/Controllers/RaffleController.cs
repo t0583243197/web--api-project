@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication2.BLL;
 using WebApplication2.DAL;
@@ -7,22 +7,30 @@ using WebApplication2.Models.DTO;
 
 namespace WebApplication2.Controllers
 {
-    public class RaffleController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class RaffleController : ControllerBase
     {
-        private readonly StoreContext _context;
         private readonly RaffleSarviceBLL _raffleSarviceBLL;
-        public RaffleController(StoreContext context, RaffleSarviceBLL raffleSarviceBLL)
+        
+        public RaffleController(RaffleSarviceBLL raffleSarviceBLL)
         {
-            _context = context;
             _raffleSarviceBLL = raffleSarviceBLL;
         }
-      public async Task <WinnerModel> RunRaffle(int giftId)
+        
+        [HttpPost("run/{giftId}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> RunRaffle(int giftId)
         {
-            // יצירת מופע של RaffleSarviceBLL
-            
-            // קריאה למתודת ההגרלה
-            var winner = await _raffleSarviceBLL.RunRaffle(giftId); 
-            return winner;
+            try
+            {
+                var winner = await _raffleSarviceBLL.RunRaffle(giftId);
+                return Ok(new { message = "הגרלה בוצעה בהצלחה", winner });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

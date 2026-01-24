@@ -9,11 +9,11 @@ namespace WebApplication2.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class GiftsController : ControllerBase
+    public class GiftController : ControllerBase
     {
         private readonly IGiftBLL _giftBll;
 
-        public GiftsController(IGiftBLL giftBll)
+        public GiftController(IGiftBLL giftBll)
         {
             _giftBll = giftBll;
         }
@@ -73,6 +73,22 @@ namespace WebApplication2.Controllers
         {
             var gifts = await _giftBll.GetMostPurchasedGiftsAsync();
             return Ok(gifts);
+        }
+
+        [HttpGet("sales-summary")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetSalesSummary()
+        {
+            var summary = await _giftBll.GetSalesSummaryAsync();
+            return Ok(summary);
+        }
+
+        [HttpGet("gifts-with-winners")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetGiftsWithWinners()
+        {
+            var giftsWithWinners = await _giftBll.GetGiftsWithWinnersAsync();
+            return Ok(giftsWithWinners);
         }
     }
 }

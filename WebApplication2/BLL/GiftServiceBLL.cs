@@ -40,11 +40,18 @@ namespace WebApplication2.BLL
 
             await _giftDal.Delete(id);
         }
-    }
 
-    // Business exception
-    public class BusinessException : Exception
-    {
-        public BusinessException(string message) : base(message) {}
+        public async Task<SalesSummaryDto> GetSalesSummaryAsync()
+        {
+            var totalRevenue = await _giftDal.GetTotalSalesAsync();
+            return new SalesSummaryDto
+            {
+                TotalRevenue = totalRevenue,
+                TotalTicketsSold = 0,
+                SalesPerGift = new List<GiftSalesDto>()
+            };
+        }
+
+        public Task<List<GiftWinnerDto>> GetGiftsWithWinnersAsync() => _giftDal.GetGiftsWithWinnersAsync();
     }
 }

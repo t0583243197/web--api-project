@@ -11,5 +11,8 @@ namespace WebApplication2.DAL
         Task<List<PurchaserDetailsDto>> GetPurchasersByGiftId(int giftId);
         Task<List<OrderModel>> GetUserOrders(int userId);
         Task<bool> HasOrdersForGift(int giftId);
+        Task<bool> ConfirmOrderAsync(int orderId);
+        Task<OrderModel> GetOrderByIdAsync(int orderId);
+        Task<bool> RemoveOrderItemAsync(int orderId, int giftId);
     }
 }

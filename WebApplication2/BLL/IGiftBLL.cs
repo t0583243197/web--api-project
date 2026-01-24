@@ -11,4 +11,6 @@ public interface IGiftBLL
     Task AddGiftAsync(GiftDTO gift);
     Task UpdateGiftAsync(GiftDTO gift);
     Task DeleteGiftAsync(int id);
+    Task<SalesSummaryDto> GetSalesSummaryAsync();
+    Task<List<GiftWinnerDto>> GetGiftsWithWinnersAsync();
 }

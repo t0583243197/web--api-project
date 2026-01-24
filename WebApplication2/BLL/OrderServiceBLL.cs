@@ -13,12 +13,14 @@ namespace WebApplication2.BLL
     {
         private readonly IOrderDal _orderDal;
         private readonly IGiftDal _giftDal;
+        private readonly IWinnerDAL _winnerDal;
         private readonly IMapper _mapper; // <-- Add this line
 
-        public OrderServiceBLL(IOrderDal orderDal, IGiftDal giftDal, IMapper mapper) // <-- Add IMapper to constructor
+        public OrderServiceBLL(IOrderDal orderDal, IGiftDal giftDal, IWinnerDAL winnerDal, IMapper mapper) // <-- Add IWinnerDAL to constructor
         {
             _orderDal = orderDal;
             _giftDal = giftDal;
+            _winnerDal = winnerDal;
             _mapper = mapper; // <-- Assign mapper
         }
 
@@ -30,6 +32,16 @@ namespace WebApplication2.BLL
 
         public async Task<int> PlaceOrderAsync(OrderDTO Dto)
         {
+            // בדיקה שאף מתנה לא הוגרלה כבר
+            foreach (var itemDto in Dto.OrderItems)
+            {
+                bool isAlreadyWon = await _winnerDal.IsGiftAlreadyWonAsync(itemDto.GiftId);
+                if (isAlreadyWon)
+                {
+                    throw new BusinessException("לא ניתן לרכוש כרטיסים למתנה שכבר הוגרלה");
+                }
+            }
+
             decimal totalSum = 0m;
 
             var orderTickets = new List<OrderTicketModel>();
@@ -57,6 +69,7 @@ namespace WebApplication2.BLL
                 UserId = Dto.UserId,
                 OrderDate = DateTime.Now,
                 TotalAmount = (double)totalSum, // Explicit cast from decimal to double
+                IsDraft = true, // הזמנה בטיוטה כברירת מחדל
                 OrderItems = orderTickets
             };
 
@@ -74,6 +87,35 @@ namespace WebApplication2.BLL
 
             // מיפוי הנתונים ל-DTO כדי שה-Controller יוכל להחזיר אותם
             return _mapper.Map<List<OrderDTO>>(orders);
+        }
+
+        public async Task ConfirmOrderAsync(int orderId)
+        {
+            bool success = await _orderDal.ConfirmOrderAsync(orderId);
+            if (!success)
+            {
+                throw new BusinessException("הזמנה לא נמצאה");
+            }
+        }
+
+        public async Task RemoveOrderItemAsync(int orderId, int giftId)
+        {
+            var order = await _orderDal.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                throw new BusinessException("הזמנה לא נמצאה");
+            }
+
+            if (!order.IsDraft)
+            {
+                throw new BusinessException("לא ניתן לשנות הזמנה לאחר רכישה");
+            }
+
+            bool success = await _orderDal.RemoveOrderItemAsync(orderId, giftId);
+            if (!success)
+            {
+                throw new BusinessException("פריט לא נמצא בהזמנה");
+            }
         }
     }
 }

@@ -131,6 +131,31 @@ namespace WebApplication2.DAL
                 .ToListAsync();
         }
 
+        public async Task<decimal> GetTotalSalesAsync()
+        {
+            return await _context.Orders
+                .Where(o => o.IsDraft == false)
+                .SumAsync(o => (decimal)o.TotalAmount);
+        }
+
+        public async Task<List<GiftWinnerDto>> GetGiftsWithWinnersAsync()
+        {
+            return await _context.Gifts
+                .AsNoTracking()
+                .GroupJoin(_context.Winners,
+                    g => g.Id,
+                    w => w.GiftId,
+                    (g, winners) => new { Gift = g, Winners = winners })
+                .SelectMany(x => x.Winners.DefaultIfEmpty(),
+                    (x, winner) => new GiftWinnerDto
+                    {
+                        GiftId = x.Gift.Id,
+                        GiftName = x.Gift.Name,
+                        WinnerName = winner != null ? winner.User.Name : null
+                    })
+                .ToListAsync();
+        }
+
         private static string GetPropertyName<T>(Expression<Func<T, object>> expression)
         {
             if (expression.Body is MemberExpression member)

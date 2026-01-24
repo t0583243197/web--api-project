@@ -47,10 +47,36 @@ namespace WebApplication2.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult Register([FromBody] UserDto userDto)
+        public async Task<IActionResult> Register([FromBody] UserDto userDto)
         {
-            _userBll.AddUser(userDto);
-            return Ok(new { message = "User registered successfully. You can now log in." });
+            Console.WriteLine("=== CONTROLLER REGISTER CALLED ===");
+            Console.WriteLine($"UserDto received: {userDto?.Email}");
+            Console.WriteLine($"UserBll is null: {_userBll == null}");
+            
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    Console.WriteLine("ModelState is invalid:");
+                    foreach (var error in ModelState)
+                    {
+                        Console.WriteLine($"{error.Key}: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
+                    }
+                    return BadRequest(ModelState);
+                }
+                    
+                Console.WriteLine("About to call _userBll.AddUser");
+                await _userBll.AddUser(userDto);
+                Console.WriteLine("_userBll.AddUser completed");
+                
+                return Ok(new { message = "User registered successfully. You can now log in." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Registration error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

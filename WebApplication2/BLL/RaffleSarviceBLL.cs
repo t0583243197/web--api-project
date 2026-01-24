@@ -8,15 +8,16 @@ namespace WebApplication2.BLL
     public class RaffleSarviceBLL:IRaffleBLL//מבצעת את ההגרלה מחלקה
     {
         private readonly StoreContext _Storecontext; // זה המופע (Instance)
-        private readonly WinnerDal _winnerDal;
+        private readonly IWinnerDAL _winnerDal;
+        private readonly IEmailService _emailService;
        
         //bll  עשיית ההגרלה
         //בינה-להפריד בין שכבת המנצח ללוגיקה של עשיית ההגרלה
-        public RaffleSarviceBLL(StoreContext context, WinnerDal winnerDal) // ההזרקה קורה כאן
+        public RaffleSarviceBLL(StoreContext context, IWinnerDAL winnerDal, IEmailService emailService) // ההזרקה קורה כאן
         {
             _Storecontext = context;
             _winnerDal = winnerDal;
-
+            _emailService = emailService;
         }
         
         
@@ -85,6 +86,22 @@ namespace WebApplication2.BLL
                     UserId = winnerUserId
                 };
                
+                // --- שלב 5: שליחת מייל לזוכה ---
+                try
+                {
+                    var user = await _Storecontext.Users.FindAsync(winnerUserId);
+                    var gift = await _Storecontext.Gifts.FindAsync(giftId);
+                    
+                    if (user != null && gift != null)
+                    {
+                        await _emailService.SendWinnerNotificationAsync(user.Email, user.Name, gift.Name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // לוג שגיאה אך לא מפשיל את ההגרלה
+                    Console.WriteLine($"שגיאה בשליחת מייל: {ex.Message}");
+                }
 
                 return winner;
                
