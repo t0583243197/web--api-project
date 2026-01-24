@@ -41,6 +41,8 @@ namespace WebApplication2.Mappings
             CreateMap<OrderModel, OrderDTO>();
             CreateMap<TicketModel, TicketDTO>();
             CreateMap<TicketDTO, TicketModel>();
+            CreateMap<OrderModel, OrderTicketModel>();
+
         }
     }
 }
