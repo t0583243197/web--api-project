@@ -63,6 +63,7 @@ namespace WebApplication2.BLL // BLL namespace
                 // מחזירים DTO ללא הסיסמה לצורך יצירת ה-Token
                 return new UserDto
                 {
+                    Id = user.Id,
                     Email = user.Email,
                     Role = user.Role.ToString(),
                     Name = user.Name

@@ -54,12 +54,12 @@ namespace WebApplication2.BLL
                 var gift = gifts.FirstOrDefault(g => g.Id == itemDto.GiftId);
                 if (gift != null)
                 {
-                    totalSum += gift.TicketPrice;
+                    totalSum += gift.TicketPrice * itemDto.Quantity;
 
                     orderTickets.Add(new OrderTicketModel
                     {
                         GiftId = gift.Id,
-                        Quantity = 1
+                        Quantity = itemDto.Quantity
                     });
                 }
             }

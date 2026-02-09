@@ -12,8 +12,6 @@ namespace WebApplication2.Models.DTO
         public int Id { get; set; }
         
         /// <summary>מזהה המשתמש שמבצע את ההזמנה</summary>
-        [Required(ErrorMessage = "מזהה המשתמש הוא חובה")]
-        [Range(0, int.MaxValue, ErrorMessage = "מזהה המשתמש חייב להיות חיובי או 0")]
         public int UserId { get; set; }
         
         public string? UserName { get; set; }

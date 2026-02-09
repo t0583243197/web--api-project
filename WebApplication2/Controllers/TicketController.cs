@@ -21,6 +21,7 @@ namespace WebApplication2.Controllers
         }
 
         [HttpPost("checkout")]
+        [Authorize]
         public async Task<IActionResult> Checkout([FromBody] OrderDTO orderDto)
         {
             if (orderDto == null || orderDto.OrderItems == null || orderDto.OrderItems.Count == 0)
@@ -30,12 +31,26 @@ namespace WebApplication2.Controllers
 
             try
             {
+                // קבלת ה-userId מהטוקן
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                {
+                    return Unauthorized("משתמש לא מזוהה");
+                }
+
+                orderDto.UserId = userId; // שימוש ב-userId מהטוקן
                 int orderId = await _orderBll.PlaceOrderAsync(orderDto);
                 return Ok(new { Message = "ההזמנה בוצעה בהצלחה!", OrderId = orderId });
             }
-            catch (Exception)
+            catch (BusinessException ex)
             {
-                return StatusCode(500, "אירעה שגיאה בעיבוד ההזמנה");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Checkout: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, $"אירעה שגיאה בעיבוד ההזמנה: {ex.Message}");
             }
         }
 

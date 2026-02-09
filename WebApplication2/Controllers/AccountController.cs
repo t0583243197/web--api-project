@@ -47,7 +47,15 @@ namespace WebApplication2.Controllers
                 };
 
                 var token = tokenHandler.CreateToken(tokenDescriptor);
-                return Ok(new { token = tokenHandler.WriteToken(token) });
+                return Ok(new { 
+                    token = tokenHandler.WriteToken(token),
+                    user = new {
+                        id = user.Id,
+                        name = user.Name,
+                        email = user.Email,
+                        role = user.Role
+                    }
+                });
             }
 
             return Unauthorized("Invalid username or password");
@@ -68,6 +76,39 @@ namespace WebApplication2.Controllers
                     
                 await _userBll.AddUser(userDto);
                 _logger.LogInformation("User registered successfully: {Email}", userDto.Email);
+                
+                // התחבר אוטומטית אחרי הרשמה
+                var user = await _userBll.ValidateUser(userDto.Email, userDto.Password);
+                if (user != null)
+                {
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var jwtSecretKey = _configuration["Jwt:SecretKey"] ?? "YourSuperSecretKeyHere1234567890!";
+                    var key = Encoding.ASCII.GetBytes(jwtSecretKey);
+
+                    var tokenDescriptor = new SecurityTokenDescriptor
+                    {
+                        Subject = new ClaimsIdentity(new[] {
+                            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                            new Claim(ClaimTypes.Name, user.Name),
+                            new Claim(ClaimTypes.Email, user.Email),
+                            new Claim(ClaimTypes.Role, user.Role)
+                        }),
+                        Expires = DateTime.UtcNow.AddHours(2),
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    };
+
+                    var token = tokenHandler.CreateToken(tokenDescriptor);
+                    return Ok(new { 
+                        token = tokenHandler.WriteToken(token),
+                        user = new {
+                            id = user.Id,
+                            name = user.Name,
+                            email = user.Email,
+                            role = user.Role
+                        },
+                        message = "User registered successfully" 
+                    });
+                }
                 
                 return Ok(new { message = "User registered successfully. You can now log in." });
             }
