@@ -13,6 +13,9 @@ namespace WebApplication2.Models // מרחב שמכיל את המודלים
         [MaxLength(1000)]
         public string? Description { get; set; } // תיאור אופציונלי
 
+        [MaxLength(2000)]
+        public string? ImageUrl { get; set; } // כתובת תמונה של המתנה
+
         [Required]
         public decimal TicketPrice { get; set; } // מחיר כרטיס ההגרלה
 

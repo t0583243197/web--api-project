@@ -51,6 +51,21 @@ namespace WebApplication2.Controllers
             return Ok(purchasers);
         }
 
+        [HttpGet("all")]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> GetAllOrders()
+        {
+            try
+            {
+                var orders = await _orderBll.GetAllOrdersAsync();
+                return Ok(orders);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "אירעה שגיאה בטעינת ההזמנות");
+            }
+        }
+
         [HttpGet("user/history/{userId}")]
         public async Task<IActionResult> GetUserOrderHistory(int userId)
         {
@@ -86,5 +101,30 @@ namespace WebApplication2.Controllers
                 return StatusCode(500, "אירעה שגיאה באישור ההזמנה");
             }
         }
+
+        [HttpPost("{orderId}/add-item")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AddItemToOrder(int orderId, [FromBody] AddItemRequest request)
+        {
+            try
+            {
+                await _orderBll.AddItemToOrderAsync(orderId, request.GiftId, request.Quantity);
+                return Ok("הפריט נוסף להזמנה");
+            }
+            catch (BusinessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "אירעה שגיאה");
+            }
+        }
+    }
+
+    public class AddItemRequest
+    {
+        public int GiftId { get; set; }
+        public int Quantity { get; set; }
     }
 }

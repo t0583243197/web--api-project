@@ -21,14 +21,29 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public async Task<ActionResult> Get([FromQuery] string? name, [FromQuery] string? donorName, [FromQuery] int? minPurchasers)
         {
+            // אם אין פרמטרים, החזר את כל המתנות עם הנתונים המלאים
+            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(donorName) && !minPurchasers.HasValue)
+            {
+                var allGifts = await _giftBll.GetAllGiftsAsync();
+                return Ok(allGifts);
+            }
+            
             var gifts = await _giftBll.GetGiftsByFilterAsync(name, donorName, minPurchasers);
             return Ok(gifts);
         }
 
         [Authorize(Roles = "Manager")]
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] GiftDTO gift)
+        public async Task<IActionResult> Add([FromBody] CreateGiftDTO createGift)
         {
+            var gift = new GiftDTO
+            {
+                Name = createGift.Name,
+                Description = createGift.Description,
+                TicketPrice = createGift.TicketPrice,
+                Category = createGift.Category,
+                DonorName = createGift.DonorName
+            };
             await _giftBll.AddGiftAsync(gift);
             return Ok("המתנה נוספה בהצלחה");
         }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,10 +13,14 @@ namespace WebApplication2.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IUserBll _userBll;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IUserBll userBll)
+        public AccountController(IUserBll userBll, IConfiguration configuration, ILogger<AccountController> logger)
         {
             _userBll = userBll;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         [HttpPost("login")]
@@ -27,11 +31,14 @@ namespace WebApplication2.Controllers
             if (user != null)
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes("YourSuperSecretKeyHere1234567890!");
+                var jwtSecretKey = _configuration["Jwt:SecretKey"] ?? "YourSuperSecretKeyHere1234567890!";
+                var key = Encoding.ASCII.GetBytes(jwtSecretKey);
 
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new[] {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                        new Claim(ClaimTypes.Name, user.Name),
                         new Claim(ClaimTypes.Email, user.Email),
                         new Claim(ClaimTypes.Role, user.Role)
                     }),
@@ -49,32 +56,24 @@ namespace WebApplication2.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserDto userDto)
         {
-            Console.WriteLine("=== CONTROLLER REGISTER CALLED ===");
-            Console.WriteLine($"UserDto received: {userDto?.Email}");
-            Console.WriteLine($"UserBll is null: {_userBll == null}");
+            _logger.LogInformation("Registration attempt for email: {Email}", userDto?.Email);
             
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    Console.WriteLine("ModelState is invalid:");
-                    foreach (var error in ModelState)
-                    {
-                        Console.WriteLine($"{error.Key}: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
-                    }
+                    _logger.LogWarning("Invalid model state for registration");
                     return BadRequest(ModelState);
                 }
                     
-                Console.WriteLine("About to call _userBll.AddUser");
                 await _userBll.AddUser(userDto);
-                Console.WriteLine("_userBll.AddUser completed");
+                _logger.LogInformation("User registered successfully: {Email}", userDto.Email);
                 
                 return Ok(new { message = "User registered successfully. You can now log in." });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Registration error: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Registration error for email: {Email}", userDto?.Email);
                 return BadRequest(new { error = ex.Message });
             }
         }

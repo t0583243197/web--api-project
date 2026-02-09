@@ -68,8 +68,8 @@ namespace WebApplication2.BLL
             {
                 UserId = Dto.UserId,
                 OrderDate = DateTime.Now,
-                TotalAmount = (double)totalSum, // Explicit cast from decimal to double
-                IsDraft = true, // הזמנה בטיוטה כברירת מחדל
+                TotalAmount = (double)totalSum,
+                IsDraft = Dto.IsDraft,
                 OrderItems = orderTickets
             };
 
@@ -80,12 +80,15 @@ namespace WebApplication2.BLL
 
         public async Task<List<OrderDTO>> GetUserHistoryAsync(int userId)
         {
-            // שליפת הנתונים מה-DAL
             var orders = await _orderDal.GetUserOrders(userId);
-
             if (orders == null || !orders.Any()) return new List<OrderDTO>();
+            return _mapper.Map<List<OrderDTO>>(orders);
+        }
 
-            // מיפוי הנתונים ל-DTO כדי שה-Controller יוכל להחזיר אותם
+        public async Task<List<OrderDTO>> GetAllOrdersAsync()
+        {
+            var orders = await _orderDal.GetAllOrders();
+            if (orders == null || !orders.Any()) return new List<OrderDTO>();
             return _mapper.Map<List<OrderDTO>>(orders);
         }
 
@@ -116,6 +119,22 @@ namespace WebApplication2.BLL
             {
                 throw new BusinessException("פריט לא נמצא בהזמנה");
             }
+        }
+
+        public async Task AddItemToOrderAsync(int orderId, int giftId, int quantity)
+        {
+            var order = await _orderDal.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                throw new BusinessException("הזמנה לא נמצאה");
+            }
+
+            if (!order.IsDraft)
+            {
+                throw new BusinessException("לא ניתן לשנות הזמנה מאושרת");
+            }
+
+            await _orderDal.AddItemToOrderAsync(orderId, giftId, quantity);
         }
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens; // מייבא סוגי טוקן
 using Microsoft.OpenApi.Models; // מייבא סוגי OpenAPI
 using System.Text; // מייבא Encoding
 using AutoMapper; // מייבא AutoMapper
+using WebApplication2.Extensions; // מייבא Extension Methods עבור Middlewares
+using System.Text.Json.Serialization; // מייבא JsonNamingPolicy
 
 // -----------------------------
 // Program.cs – תמצית ותפקיד הקובץ
@@ -23,9 +25,9 @@ using AutoMapper; // מייבא AutoMapper
 
 var builder = WebApplication.CreateBuilder(args); // יצירת WebApplicationBuilder: אוסף קונפיגורציה, DI ו־logging
 
-// מפתח סימטרי לדוגמה לשימוש בחתימת JWT.
-// הערה בטיחותית: זה רק להדגמה — יש לאחסן במיקום מאובטח ולהשתמש בערכים מתצורה ב‑prod.
-var key = Encoding.ASCII.GetBytes("YourSuperSecretKeyHere1234567890!");
+// מפתח סימטרי לשימוש בחתימת JWT - נטען מהקונפיגורציה
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"] ?? "YourSuperSecretKeyHere1234567890!";
+var key = Encoding.ASCII.GetBytes(jwtSecretKey);
 
 // -----------------------------
 // Authentication (אימות זהות)
@@ -146,7 +148,11 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddScoped<IEmailService, EmailService>(); // רישום Email Service
 
 // רישום MVC controllers ו־Razor Pages (הפרויקט הוא Razor Pages ולכן חשוב).
-builder.Services.AddControllers(); // רישום Controllers (למקרה שיש API controllers)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase; // המרה ל-camelCase בחזרה ל-Angular
+    }); // רישום Controllers (למקרה שיש API controllers)
 builder.Services.AddRazorPages(); // רישום Razor Pages (UI הפניה לדפים)
 
 // הוספת CORS לאנגולר
@@ -156,7 +162,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -166,34 +173,11 @@ builder.Services.AddCors(options =>
 var app = builder.Build(); // בניית היישום מה־builder וה־service container
 
 // -----------------------------
-// Middleware — טיפול גלובלי בשגיאות (דוגמה פשוטה)
+// Middlewares — טיפול גלובלי בשגיאות ורישום לוגים
 // -----------------------------
-// כאן מוסיף Middleware תופס חריגות מטרמינליות ומחזיר StatusCode 500 עם JSON.
-// שים לב: ב‑prod עדיף להשתמש ב־UseExceptionHandler כדי שלא לחשוף פרטי שגיאות ללקוח.
-app.Use(async (context, next) => // Middleware לטיפול גלובלי בשגיאות
-{
-    try // ניסיון להריץ את ה‑Middleware הבא בשרשרת
-    {
-        await next(); // המשך שרשרת המידלוואר
-    }
-    catch (Exception ex) // במקרה של שגיאה שלא תופסה במקום אחר
-    {
-        // לוג בסיסי לקונסולה — עדיף להשתמש ב־ILogger במערכת אמיתית.
-        Console.WriteLine($"[ERROR LOG]: {ex.Message}"); // רישום שגיאה בקונסולה
-        context.Response.ContentType = "application/json";
-
-        if (ex is BusinessException) // map business errors to 409 Conflict (or 400)
-        {
-            context.Response.StatusCode = 409;
-            await context.Response.WriteAsJsonAsync(new { error = ex.Message });
-        }
-        else
-        {
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsJsonAsync(new { error = "אירעה שגיאה בשרת" });
-        }
-    }
-});
+// הוספת Middlewares מותאמים לטיפול בשגיאות ורישום מפורט של בקשות ותגובות
+app.UseCustomExceptionHandling(); // Middleware לטיפול בשגיאות עם לוגים מתקדמים
+app.UseRequestResponseLogging(); // Middleware לרישום בקשות ותגובות
 
 // -----------------------------
 // טיפול בסביבת הרצה (Development / Production)

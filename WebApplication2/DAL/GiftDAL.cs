@@ -24,7 +24,10 @@ namespace WebApplication2.DAL
 
         public async Task<List<GiftDTO>> GetByFilter(string? name, string? donorName, int? minPurchasers)
         {
-            var query = _context.Gifts.AsQueryable();
+            var query = _context.Gifts
+                .Include(g => g.Category)
+                .Include(g => g.Donor)
+                .AsQueryable();
 
             if (!string.IsNullOrEmpty(name))
                 query = query.Where(g => EF.Functions.Like(g.Name, $"%{name}%"));
@@ -38,13 +41,28 @@ namespace WebApplication2.DAL
                 query = query.Where(g =>
                     _context.OrderTicket
                         .Where(t => t.GiftId == g.Id)
-                        .Sum(t => (int?)t.Quantity) >= min); // cast to nullable to handle empty sets
+                        .Sum(t => (int?)t.Quantity) >= min);
             }
 
-            return await query
-                .AsNoTracking()
-                .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            var gifts = await query.AsNoTracking().ToListAsync();
+
+            var giftDtos = new List<GiftDTO>();
+            foreach (var gift in gifts)
+            {
+                var dto = _mapper.Map<GiftDTO>(gift);
+                
+                var ticketCount = await _context.OrderTicket
+                    .Where(t => t.GiftId == gift.Id && t.Order.IsDraft == false)
+                    .SumAsync(t => (int?)t.Quantity);
+                dto.TicketsSold = ticketCount ?? 0;
+                
+                var hasWinner = await _context.Winners.AnyAsync(w => w.GiftId == gift.Id);
+                dto.HasWinner = hasWinner;
+                
+                giftDtos.Add(dto);
+            }
+
+            return giftDtos;
         }
 
         public Task<List<GiftDTO>> GetGiftsSortedByPrice() =>
@@ -75,7 +93,7 @@ namespace WebApplication2.DAL
             }
 
             gift.CategoryId = category.Id;
-            gift.Category = null;
+            gift.Category = null!;
 
             var donor = await _context.Donors.FirstOrDefaultAsync(d => d.Name == giftDto.DonorName);
             if (donor != null) gift.DonorId = donor.Id;
@@ -125,10 +143,31 @@ namespace WebApplication2.DAL
 
         public async Task<List<GiftDTO>> GetAll()
         {
-            return await _context.Gifts
+            var gifts = await _context.Gifts
                 .AsNoTracking()
-                .ProjectTo<GiftDTO>(_mapper.ConfigurationProvider)
+                .Include(g => g.Category)
+                .Include(g => g.Donor)
                 .ToListAsync();
+
+            var giftDtos = new List<GiftDTO>();
+            foreach (var gift in gifts)
+            {
+                var dto = _mapper.Map<GiftDTO>(gift);
+                
+                // ספירת כרטיסים שנמכרו (רק הזמנות מאושרות, לא טיוטות)
+                var ticketCount = await _context.OrderTicket
+                    .Where(t => t.GiftId == gift.Id && t.Order.IsDraft == false)
+                    .SumAsync(t => (int?)t.Quantity);
+                dto.TicketsSold = ticketCount ?? 0;
+                
+                // בדיקה אם יש זוכה
+                var hasWinner = await _context.Winners.AnyAsync(w => w.GiftId == gift.Id);
+                dto.HasWinner = hasWinner;
+                
+                giftDtos.Add(dto);
+            }
+
+            return giftDtos;
         }
 
         public async Task<decimal> GetTotalSalesAsync()

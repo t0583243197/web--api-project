@@ -18,7 +18,9 @@ namespace WebApplication2.Mappings
             CreateMap<GiftModel, GiftDTO>()
                 .ForMember(dest => dest.TicketPrice, opt => opt.MapFrom(src => src.TicketPrice))
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null))
-                .ForMember(dest => dest.DonorName, opt => opt.MapFrom(src => src.Donor != null ? src.Donor.Name : null));
+                .ForMember(dest => dest.DonorName, opt => opt.MapFrom(src => src.Donor != null ? src.Donor.Name : null))
+                .ForMember(dest => dest.TicketsSold, opt => opt.Ignore())
+                .ForMember(dest => dest.HasWinner, opt => opt.Ignore());
 
             // --- מיפוי תורמים: let AutoMapper map the collection directly (no context.Mapper in expression) ---
             CreateMap<DonorModel, DonorDTO>()
@@ -37,8 +39,13 @@ namespace WebApplication2.Mappings
                 .ForMember(dest => dest.Password, opt => opt.Ignore())
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
 
-            CreateMap<OrderTicketModel, OrderItemDTO>();
-            CreateMap<OrderModel, OrderDTO>();
+            CreateMap<OrderTicketModel, OrderItemDTO>()
+                .ForMember(dest => dest.GiftName, opt => opt.MapFrom(src => src.Gift != null ? src.Gift.Name : null));
+            
+            CreateMap<OrderModel, OrderDTO>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.Name : null))
+                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : null))
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems));
             CreateMap<TicketModel, TicketDTO>();
             CreateMap<TicketDTO, TicketModel>();
         }

@@ -17,10 +17,17 @@ namespace WebApplication2.BLL
             _orderDal = orderDal ?? throw new ArgumentNullException(nameof(orderDal));
         }
 
-        public Task<List<GiftDTO>> GetAllGiftsAsync() => _giftDal.GetAll();
+        public async Task<List<GiftDTO>> GetAllGiftsAsync()
+        {
+            var gifts = await _giftDal.GetAll();
+            return gifts;
+        }
 
-        public Task<List<GiftDTO>> GetGiftsByFilterAsync(string? name, string? donorName, int? minPurchasers)
-            => _giftDal.GetByFilter(name, donorName, minPurchasers);
+        public async Task<List<GiftDTO>> GetGiftsByFilterAsync(string? name, string? donorName, int? minPurchasers)
+        {
+            var gifts = await _giftDal.GetByFilter(name, donorName, minPurchasers);
+            return gifts;
+        }
 
         public Task<List<GiftDTO>> GetGiftsSortedByPriceAsync() => _giftDal.GetGiftsSortedByPrice();
 
@@ -32,11 +39,11 @@ namespace WebApplication2.BLL
 
         public async Task DeleteGiftAsync(int id)
         {
-            // Check if there are orders for this gift; if yes, prevent deletion.
-            bool hasOrders = await _orderDal.HasOrdersForGift(id);
+            // בדוק אם קיימות רכישות מאושרות (לא טיוטה) למתנה זו
+            bool hasConfirmedOrders = await _orderDal.HasConfirmedOrdersForGift(id);
 
-            if (hasOrders)
-                throw new BusinessException("לא ניתן למחוק את המתנה כיוון שכבר נרכשו עבורה כרטיסים.");
+            if (hasConfirmedOrders)
+                throw new BusinessException("לא ניתן למחוק את המתנה כיוון שכבר יש עבורה רכישות מאושרות שלא ניתן להפר.");
 
             await _giftDal.Delete(id);
         }
@@ -44,10 +51,14 @@ namespace WebApplication2.BLL
         public async Task<SalesSummaryDto> GetSalesSummaryAsync()
         {
             var totalRevenue = await _giftDal.GetTotalSalesAsync();
+            var totalOrders = await _orderDal.GetConfirmedOrdersCountAsync();
+            var totalTickets = await _orderDal.GetTotalTicketsSoldAsync();
+            
             return new SalesSummaryDto
             {
                 TotalRevenue = totalRevenue,
-                TotalTicketsSold = 0,
+                TotalOrders = totalOrders,
+                TotalTicketsSold = totalTickets,
                 SalesPerGift = new List<GiftSalesDto>()
             };
         }

@@ -25,7 +25,20 @@ namespace WebApplication2.Controllers
             try
             {
                 var winner = await _raffleSarviceBLL.RunRaffle(giftId);
-                return Ok(new { message = "הגרלה בוצעה בהצלחה", winner });
+                if (winner == null)
+                {
+                    return BadRequest(new { message = "אין כרטיסים למתנה זו" });
+                }
+                return Ok(new { 
+                    message = "הגרלה בוצעה בהצלחה", 
+                    winner = new {
+                        giftId = winner.GiftId,
+                        userId = winner.UserId,
+                        giftName = winner.Gift?.Name,
+                        winnerName = winner.User?.Name,
+                        winnerEmail = winner.User?.Email
+                    }
+                });
             }
             catch (Exception ex)
             {

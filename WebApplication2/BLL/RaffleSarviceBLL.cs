@@ -10,20 +10,36 @@ namespace WebApplication2.BLL
         private readonly StoreContext _Storecontext; // זה המופע (Instance)
         private readonly IWinnerDAL _winnerDal;
         private readonly IEmailService _emailService;
+        private readonly ILogger<RaffleSarviceBLL> _logger;
        
         //bll  עשיית ההגרלה
         //בינה-להפריד בין שכבת המנצח ללוגיקה של עשיית ההגרלה
-        public RaffleSarviceBLL(StoreContext context, IWinnerDAL winnerDal, IEmailService emailService) // ההזרקה קורה כאן
+        public RaffleSarviceBLL(
+            StoreContext context, 
+            IWinnerDAL winnerDal, 
+            IEmailService emailService,
+            ILogger<RaffleSarviceBLL> logger) // ההזרקה קורה כאן
         {
             _Storecontext = context;
             _winnerDal = winnerDal;
             _emailService = emailService;
+            _logger = logger;
         }
         
         
         public async Task<WinnerModel> RunRaffle(int giftId)// מקבל id
                                                             // של מתנה ומחזיר את הזוכה  
         {
+            _logger.LogInformation("התחילה הגרלה עבור מתנה {GiftId}", giftId);
+
+            // בדיקה אם כבר יש זוכה למתנה
+            var existingWinner = await _winnerDal.IsGiftAlreadyWonAsync(giftId);
+            if (existingWinner)
+            {
+                _logger.LogWarning("מתנה {GiftId} כבר הוגרלה", giftId);
+                throw new Exception("מתנה זו כבר הוגרלה ויש לה זוכה");
+            }
+
             // --- שלב 1: איסוף כל הכרטיסים שנמכרו למתנה הזו --- 
             // שליפת כל כרטיסי ההזמנה (OrderTicket) עבור המתנה הנתונה (giftId)
             //  שימוש select
@@ -43,8 +59,16 @@ namespace WebApplication2.BLL
               Quantity = ot.Quantity
           })
           .ToListAsync();
+
+                _logger.LogInformation("נמצאו {TicketCount} כרטיסים עבור מתנה {GiftId}", 
+                    tickets.Count, giftId);
+
                 // בדיקת בטיחות: אם אף אחד לא קנה כרטיס למתנה הזו, אין את מי להגריל.
-                if (!tickets.Any()) return null;
+                if (!tickets.Any())
+                {
+                    _logger.LogWarning("אין כרטיסים למתנה {GiftId} - ההגרלה בוטלה", giftId);
+                    return null;
+                }
 
                 // --- שלב 2: בניית "תיבת ההגרלה" (The Pool) ---
                 // כאן אנחנו יוצרים רשימה של מספרי ID של משתמשים.
@@ -78,6 +102,10 @@ namespace WebApplication2.BLL
                 // שליפת ה-UserId שנמצא במיקום שנבחר.
                 int winnerUserId = rafflePool[winnerIndex];
 
+                _logger.LogInformation(
+                    "בחור זוכה: UserId={WinnerUserId} בעמדה {Index} מתוך {TotalCount}", 
+                    winnerUserId, winnerIndex, rafflePool.Count);
+
                 // --- שלב 4: הכנת התוצאה ---
                 // יוצרים אובייקט חדש של "זוכה" עם הפרטים שיצאו בהגרלה.
                 var winner = new WinnerModel
@@ -85,6 +113,29 @@ namespace WebApplication2.BLL
                     GiftId = giftId,
                     UserId = winnerUserId
                 };
+
+                // --- שלב 4.5: שמירת הזוכה בדטא בייס ---
+                // חשוב! אם לא נשמור, הזוכה לא יוצמד למתנה
+                try
+                {
+                    await _winnerDal.AddWinner(winner);
+                    _logger.LogInformation(
+                        "הזוכה נשמר בהצלחה - GiftId={GiftId}, UserId={UserId}", 
+                        giftId, winnerUserId);
+                    
+                    // טעינת הפרטים המלאים
+                    winner = await _Storecontext.Winners
+                        .Include(w => w.User)
+                        .Include(w => w.Gift)
+                        .FirstOrDefaultAsync(w => w.GiftId == giftId && w.UserId == winnerUserId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, 
+                        "שגיאה בשמירת הזוכה - GiftId={GiftId}, UserId={UserId}", 
+                        giftId, winnerUserId);
+                    throw;
+                }
                
                 // --- שלב 5: שליחת מייל לזוכה ---
                 try
@@ -95,14 +146,25 @@ namespace WebApplication2.BLL
                     if (user != null && gift != null)
                     {
                         await _emailService.SendWinnerNotificationAsync(user.Email, user.Name, gift.Name);
+                        _logger.LogInformation(
+                            "מייל זכייה נשלח בהצלחה - Email={Email}, Gift={GiftName}", 
+                            user.Email, gift.Name);
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "לא ניתן לשלוח מייל - User או Gift לא נמצא. UserId={UserId}, GiftId={GiftId}", 
+                            winnerUserId, giftId);
                     }
                 }
                 catch (Exception ex)
                 {
-                    // לוג שגיאה אך לא מפשיל את ההגרלה
-                    Console.WriteLine($"שגיאה בשליחת מייל: {ex.Message}");
+                    _logger.LogError(ex, 
+                        "שגיאה בשליחת מייל זכייה ל-UserId={UserId}", winnerUserId);
+                    // לא מטילים חזרה - כישלון מייל לא צריך לשבור את ההגרלה
                 }
 
+                _logger.LogInformation("הגרלה הושלמה בהצלחה - Winner UserId={UserId}", winnerUserId);
                 return winner;
                
 
