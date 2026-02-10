@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplication2.DAL;
-
+using WebApplication2.Models;
 #nullable disable
 
 namespace WebApplication2.Migrations
@@ -22,7 +22,7 @@ namespace WebApplication2.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WebApplication2.Models.CategoryModel", b =>
+            modelBuilder.Entity<CategoryModel>( b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -43,7 +43,7 @@ namespace WebApplication2.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.DonorModel", b =>
+            modelBuilder.Entity<DonorModel>( b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +74,7 @@ namespace WebApplication2.Migrations
                     b.ToTable("Donors");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.GiftModel", b =>
+            modelBuilder.Entity<GiftModel>(b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -112,7 +112,7 @@ namespace WebApplication2.Migrations
                     b.ToTable("Gifts");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.OrderModel", b =>
+            modelBuilder.Entity<OrderModel>( b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -139,7 +139,7 @@ namespace WebApplication2.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.OrderTicketModel", b =>
+            modelBuilder.Entity<OrderTicketModel>( b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -165,7 +165,7 @@ namespace WebApplication2.Migrations
                     b.ToTable("OrderTicket");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.TicketModel", b =>
+            modelBuilder.Entity<TicketModel>( b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -190,7 +190,7 @@ namespace WebApplication2.Migrations
                     b.ToTable("Tickets");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.UserModel", b =>
+            modelBuilder.Entity<UserModel>( b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -229,7 +229,7 @@ namespace WebApplication2.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.WinnerModel", b =>
+            modelBuilder.Entity<WinnerModel>( b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -252,15 +252,15 @@ namespace WebApplication2.Migrations
                     b.ToTable("Winners");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.GiftModel", b =>
+            modelBuilder.Entity<GiftModel>( b =>
                 {
-                    b.HasOne("WebApplication2.Models.CategoryModel", "Category")
+                    b.HasOne("CategoryModel", "Category")
                         .WithMany("Gifts")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApplication2.Models.DonorModel", "Donor")
+                    b.HasOne("DonorModel", "Donor")
                         .WithMany("Gifts")
                         .HasForeignKey("DonorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -271,9 +271,9 @@ namespace WebApplication2.Migrations
                     b.Navigation("Donor");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.OrderModel", b =>
+            modelBuilder.Entity<OrderModel>( b =>
                 {
-                    b.HasOne("WebApplication2.Models.UserModel", "User")
+                    b.HasOne("UserModel", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -282,9 +282,9 @@ namespace WebApplication2.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WebApplication2.Models.OrderTicketModel", b =>
+            modelBuilder.Entity<OrderTicketModel>( b =>
                 {
-                    b.HasOne("WebApplication2.Models.GiftModel", "Gift")
+                    b.HasOne("WebApplication2.ModelGiftModel", "Gift")
                         .WithMany()
                         .HasForeignKey("GiftId")
                         .OnDelete(DeleteBehavior.Cascade)

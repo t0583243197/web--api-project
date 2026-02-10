@@ -58,8 +58,11 @@ builder.Services.AddAuthentication(options => // רישום Authentication
 
         // יש לאמת שהחתימה תקפה — חובה כאשר משתמשים בחתימה סימטרית/אסימטרית.
         ValidateIssuerSigningKey = true, // בדיקת החתימה
-        IssuerSigningKey = new SymmetricSecurityKey(key) // מפתח החתימה
-    }; // סיום פרמטרים
+        IssuerSigningKey = new SymmetricSecurityKey(key),//
+        // מפתח החתימה
+   RoleClaimType = "role"
+    }; 
+    // סיום פרמטרים
 
     // אופציות נוסxxx שאפשר להוסיף (לא מופיעות כאן בדוגמה):
     // options.RequireHttpsMetadata = true; // למנוע שימוש ב־HTTP בעת פיתוח/פרודקשן
@@ -106,8 +109,18 @@ builder.Services.AddSwaggerGen(c => // רישום Swagger
 builder.Services.AddAutoMapper(typeof(Program).Assembly); // רישום AutoMapper – מפה בין מודלים/DTOs
 // רישום DbContext – חיבור ל‑SQL Server עם מחרוזת החיבור מהקונפיגורציה (appsettings.json / secrets)
 builder.Services.AddDbContext<StoreContext>(options => // רישום DbContext
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // חיבור למסד SQL
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), // חיבור למסד SQL
+sqlServerOptionsAction: sqlOptions =>
+{
+    // זהו התיקון: מאפשר ניסיונות חוזרים אוטומטיים במקרה של שגיאה רגעית
+    sqlOptions.EnableRetryOnFailure(
+        maxRetryCount: 5,        // מספר הניסיונות המקסימלי
+        maxRetryDelay: TimeSpan.FromSeconds(30), // זמן המתנה מקסימלי בין ניסיונות
+        errorNumbersToAdd: null // קודי שגיאה ספציפיים נוספים (אופציונלי)
 
+        );
+}
+));
 // -----------------------------
 // רישום שירותי DAL/BLL ב־Dependency Injection
 // -----------------------------
@@ -155,6 +168,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular", policy =>
     {
         policy.WithOrigins("http://localhost:4200")
+        
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -214,12 +228,13 @@ else // במצב פרודקשן
 // -----------------------------
 // שימוש במידלווארים סטנדרטיים
 // -----------------------------
-app.UseHttpsRedirection(); // ניתוב אוטומטי ל־HTTPS (אם זמין)
+//app.UseHttpsRedirection(); // ניתוב אוטומטי ל־HTTPS (אם זמין)
+app.UseCors("AllowAngular");
 app.UseStaticFiles(); // הגשת קבצים סטטיים מתיקיית wwwroot
-app.UseRouting(); // הפעלת ניתוב — חייב לפני UseAuthentication/UseAuthorization
 
 // הפעלת CORS
-app.UseCors("AllowAngular");
+
+app.UseRouting(); // הפעלת ניתוב — חייב לפני UseAuthentication/UseAuthorization
 
 // סדר חשוב:
 // 1. UseAuthentication() – מאמת Identity מהבקשה (מממש את ה־Principal).

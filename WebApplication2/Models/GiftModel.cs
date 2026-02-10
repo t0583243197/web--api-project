@@ -20,13 +20,13 @@ namespace WebApplication2.Models // מרחב שמכיל את המודלים
         public int CategoryId { get; set; } // מפתח זר לקטגוריה
 
         [Required]
-        public CategoryModel Category { get; set; } = null!; // הניווט לקטגוריה
+        public CategoryModel? Category { get; set; } = null!; // הניווט לקטגוריה
 
         [Required]
         public int DonorId { get; set; } // מזהה תורם
 
         [Required]
-        public DonorModel Donor { get; set; } = null!; // הניווט לתורם
+        public DonorModel? Donor { get; set; } = null!; // הניווט לתורם
 
         // שדה להטמעת Soft Delete בעתיד
         public bool IsDeleted { get; set; } = false;
