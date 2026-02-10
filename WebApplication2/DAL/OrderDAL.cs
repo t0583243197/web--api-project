@@ -57,15 +57,34 @@ namespace WebApplication2.DAL
                         OrderId = oi.OrderId,
                         GiftId = oi.GiftId,
                         Quantity = oi.Quantity,
-                        Gift = null // avoid loading full Gift; load separately if caller needs it
+                        Gift = null! // avoid loading full Gift; load separately if caller needs it
                     }).ToList()
                 })
+                .ToListAsync();
+        }
+
+        public async Task<List<OrderModel>> GetAllOrders()
+        {
+            return await _context.Orders
+                .AsNoTracking()
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Gift)
                 .ToListAsync();
         }
 
         public async Task<bool> HasOrdersForGift(int giftId)
         {
             return await _context.OrderTicket.AnyAsync(t => t.GiftId == giftId);
+        }
+
+        /// <summary>
+        /// בדוק אם קיימות רכישות מאושרות (לא טיוטה) למתנה זו
+        /// </summary>
+        public async Task<bool> HasConfirmedOrdersForGift(int giftId)
+        {
+            return await _context.OrderTicket
+                .AnyAsync(t => t.GiftId == giftId && t.Order.IsDraft == false);
         }
 
         public async Task<bool> ConfirmOrderAsync(int orderId)
@@ -99,6 +118,31 @@ namespace WebApplication2.DAL
                 return true;
             }
             return false;
+        }
+
+        public async Task<int> GetConfirmedOrdersCountAsync()
+        {
+            return await _context.Orders.CountAsync(o => o.IsDraft == false);
+        }
+
+        public async Task<int> GetTotalTicketsSoldAsync()
+        {
+            return await _context.OrderTicket
+                .Where(t => t.Order.IsDraft == false)
+                .SumAsync(t => t.Quantity);
+        }
+
+        public async Task AddItemToOrderAsync(int orderId, int giftId, int quantity)
+        {
+            var orderItem = new OrderTicketModel
+            {
+                OrderId = orderId,
+                GiftId = giftId,
+                Quantity = quantity
+            };
+            
+            _context.OrderTicket.Add(orderItem);
+            await _context.SaveChangesAsync();
         }
     }
 }

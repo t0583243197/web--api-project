@@ -26,16 +26,22 @@ namespace WebApplication2.Controllers
 
         [Authorize(Roles = "Manager")]
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] DonorDTO donor)
+        public async Task<IActionResult> Add([FromBody] CreateDonorDTO createDonor)
         {
+            var donor = new DonorDTO
+            {
+                Name = createDonor.Name,
+                Email = createDonor.Email,
+                Address = createDonor.Address
+            };
             await _donorBll.AddDonorAsync(donor);
             return Ok(new { message = "התורם נוסף בהצלחה!" });
         }
 
-        [Authorize(Roles = "Manager")]
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] DonorDTO donor)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] DonorDTO donor)
         {
+            donor.Id = id;
             await _donorBll.UpdateDonorAsync(donor);
             return Ok(new { message = "התורם עודכן בהצלחה!" });
         }
