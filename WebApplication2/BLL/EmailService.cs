@@ -23,10 +23,6 @@ namespace WebApplication2.BLL
         {
             try
             {
-                _logger.LogInformation("מתחיל שליחת מייל ל-{Email}", email);
-                _logger.LogInformation("הגדרות SMTP: Server={Server}, Port={Port}, From={From}", 
-                    _emailSettings.SmtpServer, _emailSettings.SmtpPort, _emailSettings.SenderEmail);
-
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
                 message.To.Add(new MailboxAddress(userName, email));
@@ -44,22 +40,17 @@ namespace WebApplication2.BLL
                         </div>"
                 };
 
-                _logger.LogInformation("מתחבר ל-SMTP...");
                 using var client = new SmtpClient();
                 await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, MailKit.Security.SecureSocketOptions.StartTls);
                 
-                _logger.LogInformation("מבצע אימות...");
                 await client.AuthenticateAsync(_emailSettings.SenderEmail, _emailSettings.SenderPassword);
                 
-                _logger.LogInformation("שולח מייל...");
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
-
-                _logger.LogInformation("✅ מייל זכייה נשלח בהצלחה ל-{Email}", email);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ שגיאה בשליחת מייל זכייה ל-{Email}. שגיאה: {Message}", email, ex.Message);
+                _logger.LogError(ex, "שגיאה בשליחת מייל זכייה ל-{Email}", email);
                 throw;
             }
         }

@@ -21,7 +21,6 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public async Task<ActionResult> Get([FromQuery] string? name, [FromQuery] string? donorName, [FromQuery] int? minPurchasers)
         {
-            // אם אין פרמטרים, החזר את כל המתנות עם הנתונים המלאים
             if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(donorName) && !minPurchasers.HasValue)
             {
                 var allGifts = await _giftBll.GetAllGiftsAsync();

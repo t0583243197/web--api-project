@@ -69,7 +69,6 @@ namespace WebApplication2.BLL
 
         public async Task DeleteGiftAsync(int id)
         {
-            // בדוק אם קיימות רכישות מאושרות (לא טיוטה) למתנה זו
             bool hasConfirmedOrders = await _orderDal.HasConfirmedOrdersForGift(id);
 
             if (hasConfirmedOrders)
