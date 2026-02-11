@@ -49,6 +49,9 @@ namespace WebApplication2.BLL // BLL namespace
                 throw new ArgumentException("Email is already registered.");
             }
 
+            // Hash the password before saving
+            userDto.Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
+
             await _userDal.Add(userDto); // Await Add as well
         }
 
@@ -57,8 +60,8 @@ namespace WebApplication2.BLL // BLL namespace
             // שליפת המשתמש המלא כולל הסיסמה
             var user = await _userDal.GetFullUserByEmailAsync(email);
 
-            // בדיקה שהמשתמש קיים והסיסמה תואמת במדויק
-            if (user != null && user.Password == password)
+            // בדיקה שהמשתמש קיים והסיסמה תואמת באמצעות BCrypt
+            if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
                 // מחזירים DTO ללא הסיסמה לצורך יצירת ה-Token
                 return new UserDto
