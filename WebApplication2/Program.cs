@@ -154,7 +154,8 @@ builder.Services.AddScoped<IUserDal, UserDAL>(provider => // רישום מותא
 {
     var context = provider.GetRequiredService<StoreContext>(); // קבלת StoreContext מ‑DI
     var mapper = provider.GetRequiredService<IMapper>(); // קבלת IMapper מ‑DI
-    return new UserDAL(context, mapper); // יצירת מופע UserDAL
+    var logger = provider.GetRequiredService<ILogger<UserDAL>>();
+    return new UserDAL(context, mapper, logger); // יצירת מופע UserDAL
 });
 builder.Services.AddScoped<IUserBll, UserServiceBLL>(); // רישום User BLL
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings")); // רישום הגדרות מייל
