@@ -150,12 +150,20 @@ builder.Services.AddScoped<IWinnerDAL, WinnerDal>(provider => // רישום מו
 
 // דוגמה של רישום מותאם: יצירת UserDAL עם תלויות ידניות מה־DI (context + mapper).
 // שימוש ב־factory שימושי כאשר הבנאי של השירות דורש פרמטרים או לוגיקה מיוחדת.
-builder.Services.AddScoped<IUserDal, UserDAL>(provider => // רישום מותאם של UserDAL
+builder.Services.AddScoped<IUserDal, UserDAL>(provider =>
 {
+<<<<<<< HEAD
     var context = provider.GetRequiredService<StoreContext>(); // קבלת StoreContext מ‑DI
     var mapper = provider.GetRequiredService<IMapper>(); // קבלת IMapper מ‑DI
     var logger = provider.GetRequiredService<ILogger<UserDAL>>();
     return new UserDAL(context, mapper, logger); // יצירת מופע UserDAL
+=======
+    var context = provider.GetRequiredService<StoreContext>(); // קבלת ה-Context
+    var mapper = provider.GetRequiredService<IMapper>(); // קבלת ה-Mapper
+    var logger = provider.GetRequiredService<ILogger<UserDAL>>(); // הוספת השורה הזו! קבלת ה-Logger
+
+    return new UserDAL(context, mapper, logger); // שליחת שלושתם לבנאי
+>>>>>>> 6d8445bf3bdd61397ef430ab7ab448b34341e673
 });
 builder.Services.AddScoped<IUserBll, UserServiceBLL>(); // רישום User BLL
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings")); // רישום הגדרות מייל
